@@ -121,6 +121,15 @@
   font-size: 11px;
 }
 
+.contracts-panel { margin-top: 7px; padding: 7px; border: 2px solid; border-color: var(--white) var(--dark) var(--dark) var(--white); background: var(--face); }
+.contracts-head { display: flex; justify-content: space-between; flex-wrap: wrap; gap: 4px; color: var(--title); }
+.contracts-panel p { margin: 4px 0; color: var(--muted); font-size: 11px; }
+.contracts-list { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 4px; }
+.contract { display: flex; justify-content: space-between; gap: 4px; padding: 5px; border: 1px solid; border-color: var(--dark) var(--white) var(--white) var(--dark); font-size: 11px; }
+.contract b { color: #805800; white-space: nowrap; }
+.contract.is-complete b { color: #006400; }
+@media (max-width: 760px) { .contracts-list { grid-template-columns: 1fr; } .contract { min-height: 30px; align-items: center; } }
+
 .coin-chip.is-bump {
   animation: coinBump 0.35s ease-out;
 }

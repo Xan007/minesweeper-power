@@ -377,7 +377,7 @@
       }
       this.sound.play("radarWave");
       this.sound.play("xrayStart");
-      this.ui.toast("Visión X activa · 5 segundos de escaneo.", "info");
+      this.ui.toast(`Visión X activa · ${power.duration / 1000} segundos de escaneo.`, "info");
 
       if (this.xrayTimeout) window.clearTimeout(this.xrayTimeout);
       this.xrayTimeout = window.setTimeout(() => this.endXray(true), power.duration + 40);
@@ -876,7 +876,9 @@
           else this.fx.defuse(element);
         }
         this.sound.play("coin");
-        this.ui.toast("Corte limpio · mina neutralizada. Bien jugado.", "success");
+        this.store.addCoins(10);
+        this.ui.refreshProgression();
+        this.ui.toast("Corte limpio · mina neutralizada. +10 monedas.", "success");
         this.checkWin();
       } else if (cell) {
         this.sound.play("defuseFail");
@@ -910,11 +912,18 @@
       this.fx.win();
 
       const reward = this.rewardDetails.total;
-      this.lastReward = reward;
+      const salvageBonus = Math.round(reward * (this.store.progression.upgrades.salvage || 0) * 0.1);
       this.store.progression.manualWins += 1;
-      this.store.addCoins(reward);
+      const usedPowers = Object.values(this.powers).reduce((sum, power) => sum + power.used, 0);
+      const contracts = BP.Contracts.completeWin(this.store.progression, {
+        mode: this.mode, elapsedMs: this.elapsedMs, usedPowers,
+      });
+      this.rewardDetails.salvageBonus = salvageBonus;
+      this.rewardDetails.contractBonus = contracts.total;
+      this.lastReward = reward + salvageBonus + contracts.total;
+      this.store.addCoins(this.lastReward);
       this.store.addProgressionLog(
-        `Misión manual ${this.modeLabel} completada · +${BP.Progression.formatCoins(reward)} monedas`,
+        `Misión manual ${this.modeLabel} completada · +${BP.Progression.formatCoins(this.lastReward)} monedas`,
         "success"
       );
 
@@ -923,7 +932,7 @@
       this.ui.updateBest();
       this.ui.refreshProgression();
       this.ui.toast(
-        `Victoria manual · +${BP.Progression.formatCoins(reward)} monedas para el cuartel.`,
+        `Victoria · +${BP.Progression.formatCoins(this.lastReward)} monedas${contracts.awarded.length ? ` · ${contracts.awarded.length} contrato(s)` : ""}.`,
         "success",
         4200
       );

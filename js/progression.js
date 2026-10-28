@@ -107,6 +107,13 @@
       effect: (level) => `${Math.round(botAccuracy({ upgrades: { intelligence: level } }) * 100)}% de análisis`,
       next: (level) => `${Math.round(botAccuracy({ upgrades: { intelligence: level + 1 } }) * 100)}% de análisis`,
     },
+    salvage: {
+      id: "salvage", name: "Refinería de campo", short: "Refinería", icon: "i-coin",
+      maxLevel: 20, baseCost: 150, growth: 1.48,
+      description: "Aumenta las monedas ganadas en victorias manuales.",
+      effect: (level) => `+${level * 10}% por victoria`,
+      next: (level) => `+${(level + 1) * 10}% por victoria`,
+    },
   };
 
   function roundedCost(base, growth, level) {
@@ -146,6 +153,9 @@
       botWins: 0,
       botLosses: 0,
       turboCount: 0,
+      contracts: { date: "", completed: [] },
+      rank: 0,
+      fieldWins: 0,
       bots: [
         {
           id: "bot-1",
@@ -165,6 +175,7 @@
         concurrency: 0,
         speed: 0,
         intelligence: 0,
+        salvage: 0,
       },
       skills: {
         xray: 0,
@@ -215,6 +226,14 @@
     base.botWins = safeInt(raw.botWins, 0, 9999999, 0);
     base.botLosses = safeInt(raw.botLosses, 0, 9999999, 0);
     base.turboCount = safeInt(raw.turboCount, 0, 999999, 0);
+    base.rank = safeInt(raw.rank, 0, 999999, Math.floor(base.manualWins / 3));
+    base.fieldWins = safeInt(raw.fieldWins, 0, 9999999, base.manualWins);
+    if (raw.contracts && typeof raw.contracts === "object") {
+      base.contracts.date = /^\d{4}-\d{2}-\d{2}$/.test(raw.contracts.date) ? raw.contracts.date : "";
+      base.contracts.completed = Array.isArray(raw.contracts.completed)
+        ? raw.contracts.completed.filter((id) => ["clear", "swift", "clean"].includes(id))
+        : [];
+    }
 
     const upgrades = raw.upgrades && typeof raw.upgrades === "object" ? raw.upgrades : {};
     Object.keys(base.upgrades).forEach((id) => {

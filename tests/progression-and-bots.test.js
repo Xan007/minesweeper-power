@@ -8,6 +8,9 @@ require("../js/progression.js");
 require("../js/board.js");
 require("../js/components/bot-brain.js");
 require("../js/components/bot-runner.js");
+require("../js/components/contracts.js");
+require("../js/components/board-view.js");
+require("../js/game.js");
 
 test("recompensas: velocidad y minas sin bandera dan bonos independientes", () => {
   const p = BP.Progression;
@@ -69,4 +72,78 @@ test("los bots terminan tableros generados sin quedarse bloqueados", () => {
   }
   assert.equal(outcomes.length, 30);
   assert.ok(outcomes.every(({ reward }) => Number.isFinite(reward) && reward > 0));
+});
+
+test("el HUD actualiza el reloj y las minas restantes", () => {
+  const view = Object.create(BP.BoardViewComponent.prototype);
+  view.timer = { textContent: "" };
+  view.mineCount = { textContent: "" };
+  view.hideShield = () => {};
+  view.updateTimer(65000);
+  view.updateHud({ board: { mineCount: 10, flagsPlaced: 2, minesDefused: 1 }, powers: { immortal: { active: false } } });
+  assert.equal(view.timer.textContent, "01:05");
+  assert.equal(view.mineCount.textContent, "007");
+});
+
+test("el cronómetro arranca al descubrir y se detiene al terminar", () => {
+  const old = { performance: global.performance, request: global.requestAnimationFrame, cancel: global.cancelAnimationFrame, board: BP.Board, defuse: BP.DefuseMinigame };
+  let now = 1000;
+  let tick;
+  let shown = 0;
+  try {
+    global.performance = { now: () => now };
+    global.requestAnimationFrame = (callback) => { tick = callback; return 1; };
+    global.cancelAnimationFrame = () => {};
+    BP.DefuseMinigame = class { stop() {} };
+    BP.Board = class {
+      constructor() { this.cell = { x: 0, y: 0 }; this.minesDefused = 0; }
+      getCell() { return this.cell; }
+      reveal() { return { kind: "safe", changed: [this.cell] }; }
+      allSafeRevealed() { return false; }
+    };
+    const ui = new Proxy({ updateTimer: (value) => { shown = value; }, getCellElement: () => null }, { get: (object, key) => object[key] || (() => {}) });
+    const game = new BP.Game({ ui, store: { progression: BP.Progression.createState() }, sound: { play() {} }, fx: {} });
+    game.newGame({ width: 9, height: 9, mines: 10 }, { mode: "beginner" });
+    game.reveal(0, 0);
+    assert.equal(game.status, "playing");
+    now = 3500;
+    tick();
+    assert.equal(shown, 2500);
+    now = 4000;
+    game.stopTimer();
+    assert.equal(shown, 3000);
+  } finally {
+    global.performance = old.performance;
+    global.requestAnimationFrame = old.request;
+    global.cancelAnimationFrame = old.cancel;
+    BP.Board = old.board;
+    BP.DefuseMinigame = old.defuse;
+  }
+});
+
+test("contratos diarios se cobran una sola vez y se renuevan al día siguiente", () => {
+  const state = BP.Progression.createState();
+  state.manualWins = 1;
+  const result = { mode: "beginner", elapsedMs: 40000, usedPowers: 0 };
+  const first = BP.Contracts.completeWin(state, result, "2026-10-28");
+  assert.equal(first.total, 350);
+  assert.equal(BP.Contracts.completeWin(state, result, "2026-10-28").total, 0);
+  const nextDay = BP.Contracts.completeWin(state, result, "2026-10-29");
+  assert.equal(nextDay.awarded.reduce((sum, item) => sum + item.reward, 0), 350);
+  assert.equal(BP.Contracts.current(state, "2026-10-30").filter((item) => item.completed).length, 0);
+});
+
+test("los contratos y rangos excluyen tableros personalizados", () => {
+  const state = BP.Progression.createState();
+  state.fieldWins = 2;
+  const result = BP.Contracts.completeWin(state, { mode: "custom", elapsedMs: 1000, usedPowers: 0 }, "2026-10-28");
+  assert.equal(result.awarded.length, 0);
+  assert.equal(result.rankReward, 0);
+  const classic = BP.Contracts.completeWin(state, { mode: "beginner", elapsedMs: 300000, usedPowers: 1 }, "2026-10-28");
+  assert.equal(classic.rankReward, 60);
+  assert.equal(state.rank, 1);
+  assert.equal(BP.Contracts.completeWin(state, { mode: "custom" }, "2026-10-28").rankReward, 0);
+  const restored = BP.Progression.sanitizeState({ ...state, contracts: state.contracts });
+  assert.equal(restored.rank, 1);
+  assert.equal(restored.upgrades.salvage, 0);
 });

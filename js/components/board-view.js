@@ -51,14 +51,10 @@
       this.boardWrap = $("#boardWrap");
       this.boardStartHint = $("#boardStartHint");
 
-      this.resetBtn = $("#resetBtn");
+      this.resetBtn = $("#faceBtn");
       this.faceIcon = $("#faceIcon");
-      this.mineHundreds = $("#mineHundreds");
-      this.mineTens = $("#mineTens");
-      this.mineOnes = $("#mineOnes");
-      this.timerMinutes = $("#timerMinutes");
-      this.timerSeconds = $("#timerSeconds");
-      this.timerMillis = $("#timerMillis");
+      this.mineCount = $("#mineCount");
+      this.timer = $("#timer");
       this.statusDot = $("#statusDot");
       this.statusText = $("#statusText");
       this.shieldHud = $("#shieldHud");
@@ -92,7 +88,7 @@
       if (this.resetBtn) {
         this.resetBtn.addEventListener("click", () => {
           this.sound.play("click");
-          if (this.game) this.game.newGame();
+          if (this.game) this.ui.startSameGame();
         });
       }
 
@@ -159,6 +155,12 @@
         const y = Number(cellEl.dataset.y);
 
         if (event.pointerType === "touch") {
+          const moved = this.touchStart && this.touchStart.moved;
+          this.touchStart = null;
+          if (moved) {
+            this.suppressClick = false;
+            return;
+          }
           if (this.suppressClick || performance.now() - this.lastTouchFlagAt < 300) {
             this.suppressClick = false;
             return;
@@ -181,7 +183,10 @@
         if (this.touchStart && event.pointerType === "touch") {
           const dx = event.clientX - this.touchStart.x;
           const dy = event.clientY - this.touchStart.y;
-          if (Math.hypot(dx, dy) > 10) this.cancelTouchTimer();
+          if (Math.hypot(dx, dy) > 10) {
+            this.touchStart.moved = true;
+            this.cancelTouchTimer();
+          }
         }
 
         if (this.xrayActive) this.handleXrayPointerMove(event);
@@ -207,6 +212,13 @@
         this.clearHammerHover();
         this.clearPeek();
         if (this.xrayActive && this.xrayCursor) this.xrayCursor.hidden = true;
+      });
+
+      this.boardEl.addEventListener("pointercancel", () => {
+        this.cancelTouchTimer();
+        this.touchStart = null;
+        this.suppressClick = false;
+        this.clearChordPreview();
       });
 
       this.boardEl.addEventListener("pointerenter", () => {
@@ -256,7 +268,7 @@
         else if (key === "4" || key === "H") this.game.usePower("freeze");
         else if (key === "F2") {
           event.preventDefault();
-          this.game.newGame();
+          this.ui.startSameGame();
         }
       });
     }
@@ -393,9 +405,7 @@
       const safe = Math.max(-99, Math.min(999, minesLeft));
       const str = safe < 0 ? `-${String(Math.abs(safe)).padStart(2, "0")}` : String(safe).padStart(3, "0");
 
-      if (this.mineHundreds) this.mineHundreds.textContent = str[0];
-      if (this.mineTens) this.mineTens.textContent = str[1];
-      if (this.mineOnes) this.mineOnes.textContent = str[2];
+      if (this.mineCount) this.mineCount.textContent = str;
 
       if (game.powers.immortal.active && game.powers.immortal.clicks > 0) {
         this.setShield(game.powers.immortal.clicks);
@@ -405,11 +415,7 @@
     }
 
     updateTimer(ms) {
-      const totalSec = Math.min(999, Math.floor(ms / 1000));
-      const str = String(totalSec).padStart(3, "0");
-      if (this.timerMinutes) this.timerMinutes.textContent = str[0];
-      if (this.timerSeconds) this.timerSeconds.textContent = str[1];
-      if (this.timerMillis) this.timerMillis.textContent = str[2];
+      if (this.timer) this.timer.textContent = U.formatClock(ms);
     }
 
     setStatus(text, tone = "normal") {

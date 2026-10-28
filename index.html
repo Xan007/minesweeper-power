@@ -8,7 +8,7 @@
   <title>Buscaminas Power · Edición clásica</title>
   <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
   <link rel="stylesheet" href="css/base.css?v=classic-4">
-  <link rel="stylesheet" href="css/layout.css?v=classic-5">
+  <link rel="stylesheet" href="css/layout.css?v=classic-7">
   <link rel="stylesheet" href="css/board.css?v=classic-4">
   <link rel="stylesheet" href="css/powers.css?v=classic-5">
   <link rel="stylesheet" href="css/progression.css?v=classic-5">
@@ -417,6 +417,11 @@
               <p id="statusText">Listo. Haz clic para comenzar.</p>
               <span class="controls-hint">Clic: abrir · Clic der: bandera · H: martillo</span>
             </div>
+            <section class="contracts-panel" aria-label="Contratos diarios">
+              <div class="contracts-head"><strong>CONTRATOS DIARIOS</strong><span id="fieldRank">Rango 0 · 0/3 victorias</span></div>
+              <p>En dificultades clásicas · contrarreloj: 90 / 180 / 360 s</p>
+              <ul id="contractsList" class="contracts-list"></ul>
+            </section>
           </div>
         </div>
 
@@ -929,21 +934,22 @@
 
   <script src="js/utils.js?v=classic-4" defer></script>
   <script src="js/config.js?v=classic-4" defer></script>
-  <script src="js/progression.js?v=classic-6" defer></script>
+  <script src="js/progression.js?v=classic-7" defer></script>
+  <script src="js/components/contracts.js?v=classic-7" defer></script>
   <script src="js/storage.js?v=classic-4" defer></script>
   <script src="js/audio.js?v=classic-4" defer></script>
-  <script src="js/effects.js?v=classic-4" defer></script>
+  <script src="js/effects.js?v=classic-7" defer></script>
   <script src="js/board.js?v=classic-4" defer></script>
   <script src="js/defuse.js?v=classic-4" defer></script>
   <script src="js/components/bot-brain.js?v=classic-6" defer></script>
   <script src="js/components/bot-runner.js?v=classic-6" defer></script>
   <script src="js/bots.js?v=classic-6" defer></script>
-  <script src="js/game.js?v=classic-6" defer></script>
-  <script src="js/components/modals.js?v=classic-6" defer></script>
-  <script src="js/components/board-view.js?v=classic-5" defer></script>
+  <script src="js/game.js?v=classic-7" defer></script>
+  <script src="js/components/modals.js?v=classic-7" defer></script>
+  <script src="js/components/board-view.js?v=classic-7" defer></script>
   <script src="js/components/hq.js?v=classic-5" defer></script>
   <script src="js/components/spectator.js?v=classic-6" defer></script>
-  <script src="js/ui.js?v=classic-4" defer></script>
+  <script src="js/ui.js?v=classic-7" defer></script>
   <script src="js/app.js?v=classic-4" defer></script>
 </body>
 </html>

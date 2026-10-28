@@ -227,7 +227,7 @@
         this.sound.play("click");
         return;
       }
-      this.store.resetHistoryAndBest();
+      this.store.resetHistory();
       this.renderRecords();
       this.toast("Historial y mejores marcas borrados.", "info");
       this.sound.play("unflag");
@@ -285,7 +285,9 @@
         this.resultDetails.innerHTML = `
           <div class="result-detail result-detail--coins"><strong>+${BP.Progression.formatCoins(data.reward)}</strong><span>Monedas</span></div>
           ${details ? `<div class="result-detail"><strong>+${details.speedBonus}</strong><span>Velocidad</span></div>
-          <div class="result-detail"><strong>+${details.flagBonus}</strong><span>${details.unflagged} sin bandera</span></div>` : ""}
+          <div class="result-detail"><strong>+${details.flagBonus}</strong><span>${details.unflagged} sin bandera</span></div>
+          ${details.salvageBonus ? `<div class="result-detail"><strong>+${details.salvageBonus}</strong><span>Refinería</span></div>` : ""}
+          ${details.contractBonus ? `<div class="result-detail"><strong>+${details.contractBonus}</strong><span>Contratos y rango</span></div>` : ""}` : ""}
         `;
       }
       if (this.resultActions) this.resultActions.textContent = `${data.actions || 0} acciones`;

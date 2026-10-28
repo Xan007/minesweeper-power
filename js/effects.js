@@ -464,7 +464,7 @@
     }
 
     flash(color, duration = 320) {
-      if (!this.flashEl) return;
+      if (!this.flashEl || this.reduced) return;
       const el = this.flashEl;
       el.style.transition = "none";
       el.style.background = color;
@@ -594,6 +594,18 @@
         shape: "sparkle",
       });
       this.shakeLight();
+      this.energyArcs(element, "#45edff", 3);
+    }
+
+    energyArcs(element, color, count = 4) {
+      if (this.reduced) return;
+      const { x, y } = this.centerOf(element);
+      for (let i = 0; i < count; i += 1) {
+        const angle = (Math.PI * 2 * i) / count + Math.random() * 0.4;
+        const distance = 45 + Math.random() * 45;
+        this.lightning(x, y, x + Math.cos(angle) * distance, y + Math.sin(angle) * distance,
+          { color, size: 2, life: 0.24, displacement: 12, branches: 1 });
+      }
     }
 
     frostBurst(element) {
@@ -633,6 +645,7 @@
       });
 
       this.ring(x, y, { color: "#9df8ff", grow: 95, life: 0.5, size: 3 });
+      this.energyArcs(element, "#9df8ff", 3);
       this.start();
     }
 
@@ -656,6 +669,7 @@
         shape: "spark",
       });
       this.floatingText({ x, y: y - 10 }, "ESCUDO ACTIVADO", "#5ff0c0", 20);
+      this.energyArcs(element, "#5ff0c0", 5);
     }
 
     shieldPulse(element) {
@@ -679,6 +693,7 @@
     defuseCut(element, success) {
       const { x, y } = this.centerOf(element);
       if (success) {
+        this.energyArcs(element, "#ffc75a", 4);
         this.flash("rgba(95, 240, 192, 0.4)", 260);
         this.shakeLight();
         this.ring(x, y, { color: "#5ff0c0", grow: 110, life: 0.55, size: 3.5 });
