@@ -2131,3 +2131,8 @@ details[open] > .contracts-head strong::before { content: "▾ "; }
   .powers-panel { order: 0; }
   .core-panel { order: 1; }
 }
+
+/* La vista de bots tiene sus propios controles; el arsenal pertenece a Mi partida. */
+body.is-spectating .layout { grid-template-columns: minmax(0, 1fr); }
+body.is-spectating .sidebar { display: none; }
+body.is-spectating .game-shell { width: min(100%, 1200px); margin-inline: auto; }

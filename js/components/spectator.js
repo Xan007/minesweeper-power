@@ -436,7 +436,7 @@
           const wrap = this.specBoardWrap;
           const maxW = wrap ? Math.max(280, wrap.clientWidth - 24) : 400;
           const maxH = wrap ? Math.max(200, wrap.clientHeight - 24) : 320;
-          const fitCell = Math.max(16, Math.min(26, Math.floor(Math.min(maxW / runner.board.width, maxH / runner.board.height))));
+          const fitCell = Math.max(16, Math.min(32, Math.floor(Math.min(maxW / runner.board.width, maxH / runner.board.height))));
           this.paintBoardCells(this.specBoard, runner.board, runner.targetCell, fitCell);
         }
       }
@@ -779,7 +779,7 @@
         const wrap = this.specBoardWrap;
         const maxW = wrap ? Math.max(280, wrap.clientWidth - 24) : 400;
         const maxH = wrap ? Math.max(200, wrap.clientHeight - 24) : 320;
-        const fitCell = Math.max(16, Math.min(26, Math.floor(Math.min(maxW / runner.board.width, maxH / runner.board.height))));
+        const fitCell = Math.max(16, Math.min(32, Math.floor(Math.min(maxW / runner.board.width, maxH / runner.board.height))));
         this.paintBoardCells(this.specBoard, runner.board, runner.targetCell, fitCell);
       }
     }

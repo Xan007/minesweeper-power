@@ -174,6 +174,7 @@
     }
 
     switchView(view, botId = null) {
+      document.body.classList.toggle("is-spectating", view === "spectator");
       if (botId) {
         this.selectedBotId = botId;
         this.spectatorMode = "single";
