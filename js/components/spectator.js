@@ -235,7 +235,7 @@
       if (this.networkGoal) this.networkGoal.textContent = unlocked ? `${network.progress} / ${goal} victorias · +${P.formatCoins(P.networkReward(network.level))}` : "Bloqueada";
       if (this.networkProgress) this.networkProgress.style.width = unlocked ? `${100 * network.progress / goal}%` : "0%";
       if (this.networkHint) this.networkHint.textContent = unlocked
-        ? `Requiere ${P.networkDifficulty(network.level) === "expert" ? "Experto" : "Intermedio o Experto"}. Las victorias comparten escaneos.`
+        ? `Requiere ${P.networkDifficulty(network.level) === "expert" ? "Experto" : "Intermedio o Experto"}. Cada victoria comparte un escaneo con otro bot.`
         : "Contrata un segundo bot en el Cuartel para desbloquear operaciones y apoyo compartido.";
       if (this.networkScans) this.networkScans.textContent = unlocked ? `Escaneos disponibles: ${network.scans.length}/6 · apoyos usados: ${network.assists}` : "";
       const isTurbo = this.bots.isTurboActive;
