@@ -53,6 +53,7 @@
           active: false,
           endsAt: 0,
           duration: stats.xray.duration,
+          radius: stats.xray.radius,
         },
         defuse: {
           charges: stats.defuse.charges,
@@ -73,7 +74,8 @@
           used: 0,
           targeting: false,
           hammerMode: false,
-          radius: stats.freeze.radius,
+          areaSize: stats.freeze.areaSize,
+          castEndsAt: 0,
           maxFrozen: stats.freeze.maxFrozen,
           thawDuration: stats.freeze.thawDuration,
           frozen: new Map(),
@@ -144,6 +146,8 @@
       this.resultTimeout = null;
       if (this.xrayTimeout) window.clearTimeout(this.xrayTimeout);
       this.xrayTimeout = null;
+      if (this.freezeCastTimer) window.clearTimeout(this.freezeCastTimer);
+      this.freezeCastTimer = null;
       if (this.freezeThawTimer) window.clearInterval(this.freezeThawTimer);
       this.freezeThawTimer = null;
     }
@@ -498,24 +502,27 @@
       }
 
       this.endXray(true);
+      power.charges -= 1;
+      power.used += 1;
+      power.castEndsAt = performance.now() + 3000;
+      this.freezeCastTimer = window.setTimeout(() => {
+        this.freezeCastTimer = null;
+        if (!power.targeting || this.status !== "playing") return;
+        if (power.frozen.size) this.enterHammerMode();
+        else this.cancelFreeze(false);
+      }, 3000);
       power.targeting = true;
       power.hammerMode = false;
       power.lastCenter = "";
       this.ui.setFreezeTargeting(true);
       this.ui.setHammerMode(false);
       this.ui.updateFreezeStatus(power);
-      this.ui.setStatus(
-        `Cañón criogénico armado · elige una celda · ${power.charges} carga${power.charges === 1 ? "" : "s"} · máx. ${power.maxFrozen} congeladas.`,
-        "ice"
-      );
+      this.ui.setStatus("Congela celdas durante 3 s; luego usa el martillo.", "ice");
       this.ui.setFace("focus");
       this.ui.updatePowers(this);
       this.ui.flashPowerCard("freeze");
       this.sound.play("power");
-      this.ui.toast(
-        `Cañón armado · congela una celda y cámbiate al martillo (H) antes de que se derrita.`,
-        "info"
-      );
+      this.ui.toast("Haz clic rapidamente para congelar. El martillo aparece en 3 s.", "info");
     }
 
     enterHammerMode() {
@@ -526,6 +533,8 @@
         return false;
       }
 
+      if (this.freezeCastTimer) window.clearTimeout(this.freezeCastTimer);
+      this.freezeCastTimer = null;
       power.targeting = false;
       power.hammerMode = true;
       power.lastCenter = "";
@@ -547,6 +556,8 @@
     cancelFreeze(announce = false) {
       const power = this.powers.freeze;
       if (!power) return;
+      if (this.freezeCastTimer) window.clearTimeout(this.freezeCastTimer);
+      this.freezeCastTimer = null;
       const wasTargeting = power.targeting;
       const wasHammer = power.hammerMode;
       power.targeting = false;
@@ -578,66 +589,37 @@
       if (!power || !power.targeting || this.status !== "playing" || this.defuseActive) {
         return false;
       }
-      const cell = this.board ? this.board.getCell(x, y) : null;
-      if (!cell) return false;
-      if (cell.revealed || cell.flagged) {
-        this.ui.toast("Solo puedes congelar celdas ocultas sin bandera.", "warn");
+      if (performance.now() >= power.castEndsAt) {
+        if (power.frozen.size) this.enterHammerMode();
+        else this.cancelFreeze(false);
         return false;
       }
-      if (cell.frozen) {
-        this.ui.toast("Esa celda ya está congelada. Usa el martillo.", "warn");
-        return false;
-      }
-      if (power.frozen.size >= power.maxFrozen) {
-        this.ui.toast(`Máximo ${power.maxFrozen} celdas congeladas a la vez. Rompe una con el martillo.`, "warn");
-        return false;
-      }
-      if (power.charges <= 0) {
-        this.ui.toast("No quedan cargas de congelación en esta partida.", "warn");
-        return false;
-      }
-
       const now = performance.now();
+      const size = power.areaSize;
+      const offset = Math.floor((size - 1) / 2);
+      let added = 0;
+      for (let dy = 0; dy < size; dy += 1) {
+        for (let dx = 0; dx < size; dx += 1) {
+          const cell = this.board.getCell(x + dx - offset, y + dy - offset);
+          if (!cell || cell.revealed || cell.flagged || cell.frozen || power.frozen.size >= power.maxFrozen) continue;
+          cell.frozen = true;
+          const key = `${cell.x},${cell.y}`;
+          power.frozen.set(key, { key, cell, startedAt: now, expiresAt: now + power.thawDuration, duration: power.thawDuration });
+          this.ui.animateFreezeCell(cell);
+          added += 1;
+        }
+      }
+      if (!added) return false;
       this.ui.clearHint();
-      power.charges -= 1;
-      power.used += 1;
-      power.lastCenter = `${x},${y}`;
-      cell.frozen = true;
-      const entry = {
-        key: `${x},${y}`,
-        cell,
-        startedAt: now,
-        expiresAt: now + power.thawDuration,
-        duration: power.thawDuration,
-      };
-      power.frozen.set(entry.key, entry);
-
-      this.ui.animateFreezeCell(cell);
       this.ui.updateFreezeStatus(power);
       this.ui.updatePowers(this);
       this.ui.updateHud(this);
       const freezeEl = this.ui.getCellElement(x, y);
-      if (freezeEl && this.fx && this.fx.frostBurst) {
-        this.fx.frostBurst(freezeEl);
-      }
-      this.sound.play("freezeNova");
+      if (freezeEl && this.fx && this.fx.frostBurst) this.fx.frostBurst(freezeEl);
       this.sound.play("freeze");
       this.lastActionAt = now;
       this.startFreezeThawTicker();
-
-      // Auto-equipa el martillo de inmediato para que romper sea instantáneo
-      this.enterHammerMode();
-
-      const seconds = this.freezeSeconds(power.thawDuration);
-      this.ui.setStatus(
-        `Celda congelada · Haz clic en ella para romperla con el martillo (${seconds}s).`,
-        "ice"
-      );
-      this.ui.toast(
-        `¡Celda congelada! Haz clic en ella directamente para romperla con el martillo 🔨.`,
-        "success",
-        2800
-      );
+      if (power.frozen.size >= power.maxFrozen) this.enterHammerMode();
       return true;
     }
 
@@ -814,7 +796,7 @@
       power.charges -= 1;
       power.used += 1;
       power.active = true;
-      power.clicks = BP.POWER_DEFS.immortal.clicks;
+      power.clicks = power.maxClicks;
 
       this.ui.setShield(power.clicks);
       this.ui.setStatus(`Escudo de inmortalidad · ${power.clicks} clics de protección.`, "normal");

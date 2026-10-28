@@ -10,15 +10,15 @@
   const $$ = (sel, root = document) => Array.from(root.querySelectorAll(sel));
 
   const THOUGHT_FACES = {
-    danger: "💥",
-    win: "🏆",
-    mistake: "⚠️",
-    guess: "🎲",
-    intuition: "💡",
-    skill: "⚡",
-    deduction: "🧠",
-    safe: "✅",
-    info: "💭",
+    danger: "!",
+    win: "+",
+    mistake: "!",
+    guess: "?",
+    intuition: "?",
+    skill: "",
+    deduction: "·",
+    safe: "+",
+    info: "·",
   };
 
   const THOUGHT_KINDS = {
@@ -368,7 +368,7 @@
           // Pensamiento
           if (thoughtWrap) {
             thoughtWrap.className = `spec-card-thought is-${runner.thoughtType || "info"}`;
-            if (thoughtIco) thoughtIco.textContent = THOUGHT_FACES[runner.thoughtType] || "🧠";
+            if (thoughtIco) thoughtIco.textContent = THOUGHT_FACES[runner.thoughtType] || "·";
             if (thoughtMsg) thoughtMsg.textContent = runner.currentThought || "Resolviendo...";
           }
 
@@ -427,7 +427,7 @@
         if (this.specCoinsVal && runner.bot) this.specCoinsVal.textContent = BP.Progression.formatCoins(runner.bot.coins || 0);
 
         // Pensamiento en tiempo real
-        if (this.specThoughtFace) this.specThoughtFace.textContent = THOUGHT_FACES[runner.thoughtType] || "🧠";
+        if (this.specThoughtFace) this.specThoughtFace.textContent = THOUGHT_FACES[runner.thoughtType] || "·";
         if (this.specThoughtKind) this.specThoughtKind.textContent = THOUGHT_KINDS[runner.thoughtType] || "PENSAMIENTO ACTUAL";
         if (this.specThoughtText) this.specThoughtText.textContent = runner.currentThought || "Analizando celdas...";
 
@@ -541,7 +541,7 @@
                   <div class="spec-card-status-pill">
                     <span class="spec-status-dot${isActive ? " is-live" : ""}"></span>
                     <span class="spec-card-status-text">${runner ? runner.statusLabel() : (isActive ? "Iniciando" : "En cola")}</span>
-                    <span class="spec-card-turbo-tag" title="Turbo activo (4.5× velocidad)" hidden>⚡ TURBO</span>
+                    <span class="spec-card-turbo-tag" title="Turbo activo (4.5× velocidad)" hidden> TURBO</span>
                   </div>
                 </div>
               </div>
@@ -581,7 +581,7 @@
             </div>
 
             <div class="spec-card-thought is-info">
-              <span class="spec-thought-ico">🧠</span>
+              <span class="spec-thought-ico">·</span>
               <p class="spec-thought-msg">Iniciando bot...</p>
             </div>
 
@@ -648,7 +648,7 @@
         const thoughtMsg = card.querySelector(".spec-thought-msg");
         if (thoughtWrap && runner) {
           thoughtWrap.className = `spec-card-thought is-${runner.thoughtType || "info"}`;
-          if (thoughtIco) thoughtIco.textContent = THOUGHT_FACES[runner.thoughtType] || "🧠";
+          if (thoughtIco) thoughtIco.textContent = THOUGHT_FACES[runner.thoughtType] || "·";
           if (thoughtMsg) thoughtMsg.textContent = runner.currentThought || "Resolviendo...";
         }
 
@@ -732,8 +732,8 @@
       const baseStepMs = P.botStepMs(state);
       const speedMult = this.bots ? this.bots.speedMultiplier : 1;
       const isTurbo = Boolean(this.bots && this.bots.isTurboActive);
-      const stepMs = Math.max(30, Math.round(baseStepMs / speedMult));
-      if (this.specSpeedVal) this.specSpeedVal.textContent = isTurbo ? `${(stepMs / 1000).toFixed(2)}s ⚡` : `${(stepMs / 1000).toFixed(2)}s`;
+      const stepMs = Math.max(30, Math.round(baseStepMs * (runner && !runner.useFlags ? 1.3 : 1) / speedMult));
+      if (this.specSpeedVal) this.specSpeedVal.textContent = isTurbo ? `${(stepMs / 1000).toFixed(2)}s ` : `${(stepMs / 1000).toFixed(2)}s`;
       if (this.specSpeedSub) this.specSpeedSub.textContent = isTurbo ? `${runner ? runner.cellsPerSec : "0.0"} c/s (Turbo 4.5×)` : `${runner ? runner.cellsPerSec : "0.0"} celdas/s`;
       if (this.specWinsVal) this.specWinsVal.textContent = P.formatNumber(selectedBot.wins);
       if (this.specLossesVal) this.specLossesVal.textContent = `${P.formatNumber(selectedBot.losses)} fallos`;
@@ -755,7 +755,7 @@
       }
 
       if (runner) {
-        if (this.specThoughtFace) this.specThoughtFace.textContent = THOUGHT_FACES[runner.thoughtType] || "🧠";
+        if (this.specThoughtFace) this.specThoughtFace.textContent = THOUGHT_FACES[runner.thoughtType] || "·";
         if (this.specThoughtKind) this.specThoughtKind.textContent = THOUGHT_KINDS[runner.thoughtType] || "PENSAMIENTO ACTUAL";
         if (this.specThoughtText) this.specThoughtText.textContent = runner.currentThought || "Analizando celdas...";
 

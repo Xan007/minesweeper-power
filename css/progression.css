@@ -2229,3 +2229,10 @@
   .spectator-toolbar { flex-wrap: wrap; }
   .spec-card-ctrls { flex-wrap: wrap; }
 }
+
+.bot-flag-option { display: flex; align-items: center; flex-wrap: wrap; gap: 5px; margin: 5px 0; font-size: 11px; }
+.bot-flag-option small { color: var(--muted); }
+.bot-config { font-size: 11px; margin: 4px 0; }
+.bot-config summary { cursor: pointer; font-weight: 700; }
+.bot-config .bot-skills-grid { margin-top: 5px; }
+.bot-card .bot-actions-row { margin-top: 4px; }

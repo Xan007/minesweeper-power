@@ -10,8 +10,8 @@
   <link rel="stylesheet" href="css/base.css?v=classic-4">
   <link rel="stylesheet" href="css/layout.css?v=turbo-13">
   <link rel="stylesheet" href="css/board.css?v=classic-10">
-  <link rel="stylesheet" href="css/powers.css?v=clean-12">
-  <link rel="stylesheet" href="css/progression.css?v=mobile-11">
+  <link rel="stylesheet" href="css/powers.css?v=balance-14">
+  <link rel="stylesheet" href="css/progression.css?v=balance-14">
 </head>
 <body>
   <svg class="svg-sprite" aria-hidden="true" focusable="false">
@@ -409,20 +409,7 @@
               <div class="hud-record" id="bestChip">SIN RÉCORD</div>
             </div>
 
-            <section class="extractor" aria-label="Recarga activa del turbo">
-              <div class="extractor-copy">
-                <strong>RECARGA DE TURBO</strong>
-                <span id="extractInfo">Nivel 0 · combo ×1</span>
-                <span class="extractor-hint">Haz clic para recargar. Actívalo gratis cuando esté listo.</span>
-              </div>
-              <button class="primary-btn extractor-button" id="extractBtn" type="button">Cargar −0,5 s</button>
-              <button class="ghost-btn extractor-activate" id="extractActivate" type="button" disabled>Activar turbo gratis</button>
-              <button class="ghost-btn extractor-upgrade" id="extractUpgrade" type="button">Mejorar · 40</button>
-              <div class="extractor-charge" aria-label="Tiempo de recarga gratuita">
-                <span>RECARGA <b id="extractCharge">120 s</b></span>
-                <div class="extractor-track"><i id="extractBar"></i></div>
-              </div>
-            </section>
+
             <div class="board-frame" id="boardFrame">
               <div class="board-viewport" id="boardViewport">
                 <div class="board" id="board" role="grid" aria-label="Tablero de buscaminas"></div>
@@ -437,7 +424,7 @@
               <div class="freeze-banner" id="freezeBanner" hidden>
                 <svg class="icon" id="freezeBannerIcon"><use href="#i-snow"></use></svg>
                 <span class="freeze-banner-title" id="freezeBannerTitle">MODO CRIO</span>
-                <span class="freeze-banner-copy" id="freezeBannerCopy">Toca una celda · máx. 2</span>
+                <span class="freeze-banner-copy" id="freezeBannerCopy">Congela durante 3 s</span>
                 <span class="freeze-banner-timer" id="freezeBannerTimer">2 cargas</span>
                 <span class="freeze-banner-meter"><i id="freezeBannerFill"></i></span>
                 <kbd>H</kbd>
@@ -460,6 +447,20 @@
         </div>
 
         <div class="spectator-view" id="spectatorView" hidden>
+            <section class="extractor" aria-label="Recarga activa del turbo">
+              <div class="extractor-copy">
+                <strong>RECARGA DE TURBO</strong>
+                <span id="extractInfo">Nivel 0 · combo ×1</span>
+                <span class="extractor-hint">Haz clic para recargar. Actívalo gratis cuando esté listo.</span>
+              </div>
+              <button class="primary-btn extractor-button" id="extractBtn" type="button">Cargar −0,5 s</button>
+              <button class="ghost-btn extractor-activate" id="extractActivate" type="button" disabled>Activar turbo gratis</button>
+              <button class="ghost-btn extractor-upgrade" id="extractUpgrade" type="button">Mejorar · 40</button>
+              <div class="extractor-charge" aria-label="Tiempo de recarga gratuita">
+                <span>RECARGA <b id="extractCharge">120 s</b></span>
+                <div class="extractor-track"><i id="extractBar"></i></div>
+              </div>
+            </section>
           <div class="spectator-toolbar">
             <div class="spec-view-modes" role="tablist" aria-label="Modo de visualización de bots">
               <button class="spec-mode-btn is-active" id="specModeAllBtn" type="button" data-spec-mode="all" title="Ver todos los bots al mismo tiempo en tiempo real">
@@ -618,7 +619,7 @@
 
               <div class="thought-bubble" id="specThoughtBubble">
                 <div class="thought-top">
-                  <span class="thought-face" id="specThoughtFace">🧠</span>
+                  <span class="thought-face" id="specThoughtFace">·</span>
                   <span class="thought-kind" id="specThoughtKind">PENSAMIENTO ACTUAL</span>
                 </div>
                 <p id="specThoughtText">Analizando celdas y números adyacentes...</p>
@@ -725,7 +726,7 @@
           <article><svg class="icon"><use href="#i-eye"></use></svg><div><h4>Visión X</h4><p>Durante 6 s, apunta a una celda para ver su contenido. En móvil, tócala para inspeccionarla sin abrirla.</p></div></article>
           <article><svg class="icon"><use href="#i-tool"></use></svg><div><h4>Kit de desarme</h4><p>Si pisas una mina, pulsa <b>Espacio</b> o haz clic cuando la aguja cruce la sección blanca.</p></div></article>
           <article><svg class="icon"><use href="#i-shield"></use></svg><div><h4>Inmortalidad</h4><p>Protege durante 6 clics y neutraliza las minas que pises. Las mejoras amplían su duración.</p></div></article>
-          <article><svg class="icon"><use href="#i-snow"></use></svg><div><h4>Cañón criogénico</h4><p>Congela hasta 3 celdas y rómpelas con el martillo antes de que se derritan.</p></div></article>
+          <article><svg class="icon"><use href="#i-snow"></use></svg><div><h4>Cañón criogénico</h4><p>Congela durante 3 s y rompe el hielo con el martillo. Mejora el alcance en el cuartel.</p></div></article>
         </div>
       </div>
 
@@ -976,7 +977,7 @@
 
   <script src="js/utils.js?v=classic-4" defer></script>
   <script src="js/config.js?v=classic-10" defer></script>
-  <script src="js/progression.js?v=turbo-13" defer></script>
+  <script src="js/progression.js?v=balance-14" defer></script>
   <script src="js/components/contracts.js?v=turbo-13" defer></script>
   <script src="js/components/extractor.js?v=turbo-13" defer></script>
   <script src="js/storage.js?v=mobile-11" defer></script>
@@ -984,14 +985,14 @@
   <script src="js/effects.js?v=clean-12" defer></script>
   <script src="js/board.js?v=classic-4" defer></script>
   <script src="js/defuse.js?v=classic-4" defer></script>
-  <script src="js/components/bot-brain.js?v=classic-6" defer></script>
-  <script src="js/components/bot-runner.js?v=classic-8" defer></script>
-  <script src="js/bots.js?v=turbo-13" defer></script>
-  <script src="js/game.js?v=classic-10" defer></script>
+  <script src="js/components/bot-brain.js?v=balance-14" defer></script>
+  <script src="js/components/bot-runner.js?v=balance-14" defer></script>
+  <script src="js/bots.js?v=balance-14" defer></script>
+  <script src="js/game.js?v=balance-14" defer></script>
   <script src="js/components/modals.js?v=classic-10" defer></script>
-  <script src="js/components/board-view.js?v=mobile-11" defer></script>
-  <script src="js/components/hq.js?v=classic-5" defer></script>
-  <script src="js/components/spectator.js?v=turbo-13" defer></script>
+  <script src="js/components/board-view.js?v=balance-14" defer></script>
+  <script src="js/components/hq.js?v=balance-14" defer></script>
+  <script src="js/components/spectator.js?v=balance-14" defer></script>
   <script src="js/ui.js?v=mobile-11" defer></script>
   <script src="js/app.js?v=classic-4" defer></script>
 </body>

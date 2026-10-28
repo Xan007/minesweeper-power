@@ -489,3 +489,36 @@ test("la recarga no avanza por debajo de cero y el turbo termina a tiempo", () =
     assert.equal(manager.speedMultiplier, 1);
   } finally { global.performance = original; }
 });
+
+test("velocidad e inteligencia de bots progresan dentro de los limites previstos", () => {
+  const p = BP.Progression;
+  const state = p.createState();
+  assert.equal(p.botStepMs(state), 1500);
+  state.upgrades.speed = 6;
+  assert.equal(p.botStepMs(state), 200);
+  assert.ok(p.botAccuracy(state) < 1);
+  const saved = p.sanitizeState({ ...state, bots: [{ ...state.bots[0], useFlags: false }] });
+  assert.equal(saved.bots[0].useFlags, false);
+});
+
+test("las minas recordadas permiten deducir sin colocar banderas", () => {
+  const board = new BP.Board(3, 2, 1);
+  board.generated = true;
+  const clue = board.getCell(0, 0);
+  clue.revealed = true;
+  clue.adjacent = 1;
+  const known = board.getCell(1, 0);
+  const result = BP.BotBrain.analyze(board, new Set([`${known.x},${known.y}`]));
+  assert.ok(result.safe.some((cell) => cell.x === 0 && cell.y === 1));
+  assert.equal(board.flagsPlaced, 0);
+});
+
+test("mejorar habilidades amplia el hielo y la vision", () => {
+  const p = BP.Progression;
+  const base = p.manualPowerStats({ freeze: 0, xray: 0 });
+  const medium = p.manualPowerStats({ freeze: 1, xray: 1 });
+  const max = p.manualPowerStats({ freeze: 4, xray: 4 });
+  assert.deepEqual([base.freeze.areaSize, medium.freeze.areaSize, max.freeze.areaSize], [1, 2, 3]);
+  assert.ok(max.xray.duration > base.xray.duration);
+  assert.ok(max.xray.radius > base.xray.radius);
+});

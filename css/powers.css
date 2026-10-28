@@ -845,3 +845,8 @@
   .power-body { flex-direction: column; align-items: flex-start; gap: 2px; }
   .power-meta { flex-direction: row; align-items: center; }
 }
+
+/* El contador no tapa la casilla bajo el cursor. */
+.xray-cursor { width: 0; height: 0; transform: none; }
+.xray-cursor-ring, .xray-cursor::before, .xray-cursor::after { display: none; }
+.xray-cursor-label { top: 20px; left: 20px; transform: none; }

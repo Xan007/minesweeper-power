@@ -15,6 +15,8 @@
     return Math.min(max, Math.max(min, value));
   }
 
+  const stateLevel = (state) => Math.max(0, Math.min(6, Number(state.upgrades.intelligence) || 0));
+
   class BotRunner {
     constructor(manager, bot) {
       this.manager = manager;
@@ -66,6 +68,8 @@
       const preset = BP.PRESETS[difficulty];
       const state = this.manager.store.progression;
 
+      this.useFlags = this.bot.useFlags !== false;
+      this.knownMines = new Set();
       this.preset = preset;
       this.board = new BP.Board(preset.width, preset.height, preset.mines);
       const startX = Math.floor(preset.width / 2);
@@ -142,7 +146,7 @@
       const state = this.manager.store.progression;
       const baseStepMs = BP.Progression.botStepMs(state);
       const speedMult = this.manager.speedMultiplier || 1;
-      const stepMs = Math.max(30, Math.round(baseStepMs / speedMult));
+      const stepMs = Math.max(30, Math.round(baseStepMs * (this.useFlags ? 1 : 1.3) / speedMult));
       this.accuracy = BP.Progression.botAccuracy(state);
       if (now - this.lastStepAt < stepMs) return false;
       this.lastStepAt = now;
@@ -165,9 +169,9 @@
         const toMark = analysis.mines.filter((cell) => !cell.revealed && !cell.flagged);
         if (toMark.length > 0) {
           const targetMine = toMark[0];
-          this.board.toggleFlag(targetMine.x, targetMine.y);
+          this.rememberMine(targetMine);
           this.setThought(
-            `Deducción lógica: mina localizada en (${targetMine.x + 1}, ${targetMine.y + 1}). Bandera colocada (${toMark.length - 1} pendientes).`,
+            `Deducción lógica: mina localizada en (${targetMine.x + 1}, ${targetMine.y + 1}). ${this.useFlags ? "Bandera colocada" : "Mina recordada"} (${toMark.length - 1} pendientes).`,
             "deduction",
             targetMine
           );
@@ -181,10 +185,13 @@
       let target = null;
 
       if (analysis.safe.length > 0) {
-        target = pickRandom(analysis.safe);
+        const level = stateLevel(this.manager.store.progression);
+        const reliability = 0.82 + level * 0.025 - (this.useFlags ? 0 : 0.12);
+        const overlooked = hidden.filter((cell) => !analysis.safe.includes(cell));
+        target = Math.random() < reliability ? pickRandom(analysis.safe) : (pickRandom(overlooked) || pickRandom(analysis.safe));
         this.status = "solving";
         this.setThought(
-          `Deducción segura en (${target.x + 1}, ${target.y + 1}).`,
+          `Revisando (${target.x + 1}, ${target.y + 1}).`,
           "safe",
           target
         );
@@ -195,7 +202,7 @@
           const target = pickRandom(hidden);
           this.status = "scan";
           this.setThought(`${support} envió un escaneo: revisando (${target.x + 1}, ${target.y + 1}).`, "skill", target);
-          if (target.mine) this.board.toggleFlag(target.x, target.y);
+          if (target.mine) this.rememberMine(target);
           else this.board.reveal(target.x, target.y);
           this.steps += 1;
           this.updateProgress();
@@ -233,7 +240,7 @@
               peek
             );
             if (peek.mine) {
-              if (!peek.flagged) this.board.toggleFlag(peek.x, peek.y);
+              if (!peek.flagged) this.rememberMine(peek);
             } else {
               this.board.reveal(peek.x, peek.y);
             }
@@ -288,16 +295,21 @@
       if (this.board.allSafeRevealed()) this.finishWin(now);
     }
 
+    rememberMine(cell) {
+      if (this.useFlags !== false) this.board.toggleFlag(cell.x, cell.y);
+      else this.knownMines.add(`${cell.x},${cell.y}`);
+    }
+
     hiddenCells() {
       const result = [];
       this.board.forEach((cell) => {
-        if (!cell.revealed && !cell.flagged) result.push(cell);
+        if (!cell.revealed && !cell.flagged && !(this.knownMines && this.knownMines.has(`${cell.x},${cell.y}`))) result.push(cell);
       });
       return result;
     }
 
     analyze() {
-      return BP.BotBrain.analyze(this.board);
+      return BP.BotBrain.analyze(this.board, this.knownMines);
     }
 
     pickFreezeCenter(hidden) {

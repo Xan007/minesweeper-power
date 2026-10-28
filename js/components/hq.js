@@ -214,10 +214,14 @@
                 </div>
               </div>
 
-              <div class="bot-skills-row">
-                <span class="bot-skills-sub">Arsenal:</span>
+              <label class="bot-flag-option" title="Se aplica al siguiente tablero">
+                <input type="checkbox" data-bot-flags="${U.escapeHtml(bot.id)}" ${bot.useFlags !== false ? "checked" : ""}>
+                Banderas <small>Más seguro · sin ellas +30% tiempo</small>
+              </label>
+              <details class="bot-config">
+                <summary>Habilidades</summary>
                 <div class="bot-skills-grid">${skillChips}</div>
-              </div>
+              </details>
 
               <div class="bot-actions-row">
                 <button class="ghost-btn ghost-btn--small" type="button" data-hq-action="watch-bot" data-bot="${U.escapeHtml(bot.id)}">
@@ -398,6 +402,13 @@
     }
 
     handleHqChange(event) {
+      const flags = event.target.closest("[data-bot-flags]");
+      if (flags && this.bots) {
+        this.bots.setBotFlags(flags.dataset.botFlags, flags.checked);
+        this.sound.play("click");
+        this.ui.toast("Cambio aplicado al siguiente tablero.", "info");
+        return;
+      }
       const select = event.target.closest("[data-bot-difficulty]");
       if (!select || !this.bots) return;
       const botId = select.dataset.botDifficulty;

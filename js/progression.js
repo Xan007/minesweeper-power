@@ -20,7 +20,7 @@
       maxLevel: 4,
       baseCost: 60,
       growth: 1.8,
-      manual: (level) => `${3 + level} usos · radar 3x3`,
+      manual: (level) => `${3 + level} usos · ${(6000 + level * 1500) / 1000} s · ${level >= 4 ? 5 : 3}x${level >= 4 ? 5 : 3}`,
       bot: (level) => `${1 + level} escaneos por tablero`,
     },
     defuse: {
@@ -53,7 +53,7 @@
       maxLevel: 4,
       baseCost: 70,
       growth: 1.8,
-      manual: (level) => `${3 + Math.floor(level / 2)} celdas · ${(10000 + level * 2000) / 1000} s`,
+      manual: (level) => `${3 + Math.floor(level / 2)} cargas · ${level >= 3 ? 3 : level >= 1 ? 2 : 1}x${level >= 3 ? 3 : level >= 1 ? 2 : 1} · 3 s`,
       bot: (level) => `${1 + Math.floor(level / 2)} celdas congeladas por tablero`,
     },
   };
@@ -103,7 +103,7 @@
       maxLevel: 6,
       baseCost: 35,
       growth: 1.65,
-      description: "Aumenta la probabilidad de elegir la casilla de menor riesgo.",
+      description: "Reduce errores y mejora la elecci?n de casillas de menor riesgo.",
       effect: (level) => `${Math.round(botAccuracy({ upgrades: { intelligence: level } }) * 100)}% de análisis`,
       next: (level) => `${Math.round(botAccuracy({ upgrades: { intelligence: level + 1 } }) * 100)}% de análisis`,
     },
@@ -174,6 +174,7 @@
           number: 1,
           name: "Scout-01",
           difficulty: "beginner",
+          useFlags: true,
           boards: 0,
           wins: 0,
           losses: 0,
@@ -220,6 +221,7 @@
       number,
       name: String(raw.name || `Scout-${String(number).padStart(2, "0")}`).slice(0, 28),
       difficulty,
+      useFlags: raw.useFlags !== false,
       skills,
       wins: safeInt(raw.wins, 0, 9999999, 0),
       losses: safeInt(raw.losses, 0, 9999999, 0),
@@ -333,12 +335,12 @@
 
   function botStepMs(state) {
     const level = safeInt(state && state.upgrades ? state.upgrades.speed : 0, 0, UPGRADE_DEFS.speed.maxLevel, 0);
-    return Math.max(120, 480 - level * 50);
+    return 1500 - Math.round(1300 * level / UPGRADE_DEFS.speed.maxLevel);
   }
 
   function botAccuracy(state) {
     const level = safeInt(state && state.upgrades ? state.upgrades.intelligence : 0, 0, UPGRADE_DEFS.intelligence.maxLevel, 0);
-    return Math.min(0.97, 0.55 + level * 0.07);
+    return 0.3 + level * 0.08;
   }
 
   function botSkillCharges(id, level) {
@@ -357,7 +359,8 @@
     return {
       xray: {
         charges: 3 + levels.xray,
-        duration: 6000,
+        duration: 6000 + levels.xray * 1500,
+        radius: levels.xray >= 4 ? 2 : 1,
       },
       defuse: {
         charges: 3 + levels.defuse,
@@ -368,8 +371,8 @@
       },
       freeze: {
         charges: 3 + Math.floor(levels.freeze / 2),
-        radius: 0,
-        maxFrozen: 3,
+        areaSize: levels.freeze >= 3 ? 3 : levels.freeze >= 1 ? 2 : 1,
+        maxFrozen: 27,
         thawDuration: 10000 + levels.freeze * 2000,
       },
     };

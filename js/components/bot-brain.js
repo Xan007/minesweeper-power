@@ -4,16 +4,16 @@
   const BP = (window.BP = window.BP || {});
   const key = (cell) => `${cell.x},${cell.y}`;
 
-  function analyze(board) {
+  function analyze(board, knownMines = new Set()) {
     const constraints = [];
     const hidden = [];
     board.forEach((cell) => {
-      if (!cell.revealed && !cell.flagged && !cell.frozen) hidden.push(cell);
+      if (!cell.revealed && !cell.flagged && !cell.frozen && !knownMines.has(key(cell))) hidden.push(cell);
       if (!cell.revealed || cell.adjacent <= 0 || cell.defused) return;
       let known = 0;
       const cells = [];
       board.neighbors(cell.x, cell.y).forEach((neighbor) => {
-        if (neighbor.flagged || neighbor.defused) known += 1;
+        if (neighbor.flagged || neighbor.defused || knownMines.has(key(neighbor))) known += 1;
         else if (!neighbor.revealed && !neighbor.frozen) cells.push(neighbor);
       });
       const mines = cell.adjacent - known;
@@ -37,7 +37,7 @@
       if (remaining >= 0 && remaining <= difference.length) mark(difference, remaining);
     }));
 
-    const remainingMines = Math.max(0, board.mineCount - board.flagsPlaced - board.minesDefused);
+    const remainingMines = Math.max(0, board.mineCount - board.flagsPlaced - board.minesDefused - knownMines.size);
     const baseline = hidden.length ? Math.min(1, remainingMines / hidden.length) : 1;
     const risks = hidden.map((cell) => {
       const related = constraints.filter((constraint) => constraint.cells.includes(cell));

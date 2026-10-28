@@ -174,6 +174,7 @@
         number,
         name: `Scout-${String(number).padStart(2, "0")}`,
         difficulty: "beginner",
+        useFlags: true,
         skills: { xray: false, defuse: false, immortal: false, freeze: false },
         wins: 0,
         losses: 0,
@@ -186,6 +187,14 @@
       this.store.save();
       this.emit();
       return { ok: true, bot, cost };
+    }
+
+    setBotFlags(botId, enabled) {
+      const bot = this.state.bots.find((item) => item.id === botId);
+      if (!bot) return;
+      bot.useFlags = Boolean(enabled);
+      this.store.save();
+      this.emit();
     }
 
     buyUpgrade(id) {

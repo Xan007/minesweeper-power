@@ -225,7 +225,7 @@
             if (this.game.powers.freeze.hammerMode) {
               this.setHammerHover(x, y);
             } else if (this.game.powers.freeze.targeting) {
-              this.setFreezeArea(x, y, 0);
+              this.setFreezeArea(x, y, this.game.powers.freeze.areaSize);
             }
           }
         }
@@ -285,6 +285,11 @@
 
     bindKeyboard() {
       document.addEventListener("keydown", (event) => {
+        if (this.game && this.game.defuseActive && (event.code === "Space" || event.key === " " || event.key === "Enter")) {
+          event.preventDefault();
+          if (!event.repeat) this.game.cutDefuse();
+          return;
+        }
         if (event.target.matches("input, textarea, select")) return;
         if (this.ui.activeModal) return;
 
@@ -603,10 +608,13 @@
       }
     }
 
-    setFreezeArea(x, y, radius = 0) {
+    setFreezeArea(x, y, size = 1) {
       this.clearFreezeArea();
-      const el = this.getCellElement(x, y);
-      if (el) el.classList.add("is-freeze-hover");
+      const offset = Math.floor((size - 1) / 2);
+      for (let dy = 0; dy < size; dy += 1) for (let dx = 0; dx < size; dx += 1) {
+        const el = this.getCellElement(x + dx - offset, y + dy - offset);
+        if (el) el.classList.add("is-freeze-hover");
+      }
     }
 
     clearFreezeArea() {
@@ -708,31 +716,31 @@
       const key = `${cell.x},${cell.y}`;
       if (this.peekKey === key) return;
       this.clearPeek();
-      const el = this.getCellElement(cell.x, cell.y);
-      if (!el) return;
       this.peekKey = key;
-      this.peekEl = el;
-
-      let peek = el.querySelector(".peek");
-      if (!peek) {
-        peek = document.createElement("span");
+      this.peekElements = [];
+      const radius = this.game.powers.xray.radius;
+      for (let dy = -radius; dy <= radius; dy += 1) for (let dx = -radius; dx <= radius; dx += 1) {
+        const nearby = this.game.board.getCell(cell.x + dx, cell.y + dy);
+        if (!nearby || nearby.revealed) continue;
+        const el = this.getCellElement(nearby.x, nearby.y);
+        if (!el) continue;
+        const peek = document.createElement("span");
         peek.className = "peek";
+        if (nearby.mine) {
+          peek.dataset.kind = "mine";
+          peek.innerHTML = U.icon("i-bomb");
+        } else if (nearby.adjacent > 0) {
+          peek.dataset.kind = "number";
+          peek.textContent = String(nearby.adjacent);
+          peek.style.color = NUMBER_COLORS[nearby.adjacent] || "";
+        } else {
+          peek.dataset.kind = "empty";
+          peek.textContent = "?";
+        }
         el.appendChild(peek);
+        el.classList.add("is-peek");
+        this.peekElements.push(el);
       }
-
-      if (cell.mine) {
-        peek.dataset.kind = "mine";
-        peek.innerHTML = U.icon("i-bomb");
-      } else if (cell.adjacent > 0) {
-        peek.dataset.kind = "number";
-        peek.textContent = String(cell.adjacent);
-        peek.style.color = NUMBER_COLORS[cell.adjacent] || "";
-      } else {
-        peek.dataset.kind = "empty";
-        peek.textContent = "VACÍO";
-      }
-
-      el.classList.add("is-peek");
       if (cell.mine && performance.now() - this.lastPing > 110) {
         this.lastPing = performance.now();
         this.sound.play("xrayPing");
@@ -744,12 +752,12 @@
     }
 
     clearPeek() {
-      if (this.peekEl) {
-        this.peekEl.classList.remove("is-peek");
-        const peek = this.peekEl.querySelector(".peek");
+      (this.peekElements || []).forEach((el) => {
+        el.classList.remove("is-peek");
+        const peek = el.querySelector(".peek");
         if (peek) peek.remove();
-      }
-      this.peekEl = null;
+      });
+      this.peekElements = [];
       this.peekKey = null;
     }
   }
