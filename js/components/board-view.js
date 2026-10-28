@@ -9,17 +9,6 @@
   const $ = (sel, root = document) => root.querySelector(sel);
   const $$ = (sel, root = document) => Array.from(root.querySelectorAll(sel));
 
-  const NUMBER_COLORS = {
-    1: "#0000ff",
-    2: "#008000",
-    3: "#ff0000",
-    4: "#000080",
-    5: "#800000",
-    6: "#008080",
-    7: "#000000",
-    8: "#808080",
-  };
-
   class BoardViewComponent {
     constructor({ ui, store, sound, fx }) {
       this.ui = ui;
@@ -825,7 +814,6 @@
         } else if (nearby.adjacent > 0) {
           peek.dataset.kind = "number";
           peek.textContent = String(nearby.adjacent);
-          peek.style.color = NUMBER_COLORS[nearby.adjacent] || "";
         } else {
           peek.dataset.kind = "empty";
           peek.textContent = "";

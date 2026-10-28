@@ -94,3 +94,28 @@ body { font-size: 13px; color: var(--ui-ink); }
 /* Los tableros se escalan dentro de su espacio: nunca tienen barras de desplazamiento. */
 .board-viewport, .spec-card-board-wrap, .spectator-board-wrap { max-height: none; overflow: visible; }
 .spectator-multi-grid { align-items: start; }
+
+/* Vision X: cristal verde translucido con lectura de monitor y barrido suave. */
+#board .cell.is-peek { background: var(--face) !important; }
+#board .cell .peek {
+  inset: 1px;
+  background: repeating-linear-gradient(0deg, rgba(2,32,13,.08) 0 1px, transparent 1px 4px), rgba(2,52,21,.83);
+  box-shadow: inset 1px 1px rgba(194,255,207,.28), inset -1px -1px rgba(0,20,6,.55);
+  color: #aaffb8;
+  font-family: Consolas, "Courier New", monospace;
+  text-shadow: 0 0 5px rgba(91,255,136,.7);
+}
+#board .cell .peek[data-kind="mine"] {
+  background: repeating-linear-gradient(0deg, rgba(2,32,13,.1) 0 1px, transparent 1px 4px), rgba(0,36,13,.88);
+  color: #daffe0;
+  box-shadow: inset 1px 1px rgba(194,255,207,.35), inset -1px -1px rgba(0,20,6,.65);
+}
+#board .cell .peek[data-kind="mine"] .icon { width: 60%; height: 60%; filter: drop-shadow(0 0 3px rgba(108,255,154,.75)); }
+#board .cell .peek[data-kind="empty"] { color: transparent; }
+.xray-lens { border: 2px solid #43ec78; box-shadow: inset 0 0 0 1px rgba(5,58,20,.8), 0 0 6px rgba(27,218,88,.4); overflow: hidden; }
+.xray-lens::after { content: ""; position: absolute; inset: 0; pointer-events: none; background: linear-gradient(to bottom, transparent 45%, rgba(144,255,179,.19) 49%, rgba(144,255,179,.28) 50%, transparent 53%); background-size: 100% 220%; animation: xray-sweep 2.4s linear infinite; }
+.power-timer-strip[data-mode="xray"] { background: #d9eedb; color: #153b20; }
+.power-timer-strip[data-mode="xray"] strong { color: #07521b; }
+.power-timer-strip[data-mode="xray"] .power-timer-track i { background: #138b3d; }
+@keyframes xray-sweep { from { background-position: 0 100%; } to { background-position: 0 -100%; } }
+@media (prefers-reduced-motion: reduce) { .xray-lens::after { animation: none; } }
