@@ -157,10 +157,12 @@
       const recordsBtn2 = $("#recordsBtn2");
       const helpBtn = $("#helpBtn");
       const newGameBtn = $("#newGameBtn");
+      const newSessionBtn = $("#newSessionBtn");
       if (recordsBtn) recordsBtn.addEventListener("click", () => this.openRecords());
       if (recordsBtn2) recordsBtn2.addEventListener("click", () => this.openRecords());
       if (helpBtn) helpBtn.addEventListener("click", () => this.openHelp());
       if (newGameBtn) newGameBtn.addEventListener("click", () => this.startSameGame());
+      if (newSessionBtn) newSessionBtn.addEventListener("click", () => this.startNewSession());
 
       // Pestañas principales (Mi Partida vs Bots en vivo)
       if (this.viewTabPlay) {
@@ -303,12 +305,26 @@
     }
 
     startSameGame() {
-      if (this.game) this.game.newGame();
+      if (this.game) this.game.newGame(this.game.config, {
+        mode: this.game.mode, modeKey: this.game.modeKey, label: this.game.modeLabel,
+      });
+    }
+
+    startNewSession() {
+      if (!window.confirm("¿Empezar una nueva sesión? Se borrarán las monedas, bots, mejoras, récords y ajustes guardados en este navegador.")) return false;
+      if (!this.store.resetAll()) {
+        this.toast("No se pudo reiniciar la sesión porque el almacenamiento no está disponible.", "warn", 5000);
+        return false;
+      }
+      window.location.reload();
+      return true;
     }
 
     setDifficultyActive(mode) {
       $$(".diff-btn").forEach((btn) => {
-        btn.classList.toggle("is-active", btn.dataset.diff === mode);
+        const active = btn.dataset.diff === mode;
+        btn.classList.toggle("is-active", active);
+        btn.setAttribute("aria-pressed", String(active));
       });
     }
 

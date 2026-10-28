@@ -13,6 +13,8 @@ require("../js/components/contracts.js");
 require("../js/components/extractor.js");
 require("../js/components/board-view.js");
 require("../js/components/spectator.js");
+require("../js/storage.js");
+require("../js/ui.js");
 require("../js/game.js");
 require("../js/effects.js");
 
@@ -126,6 +128,69 @@ test("el cronómetro arranca al descubrir y se detiene al terminar", () => {
     BP.Board = old.board;
     BP.DefuseMinigame = old.defuse;
   }
+});
+
+test("Nueva partida conserva la dificultad y configuración", () => {
+  let args;
+  const ui = Object.create(BP.UI.prototype);
+  ui.game = { config: { width: 16, height: 16, mines: 40 }, mode: "intermediate", modeKey: "intermediate", modeLabel: "Intermedio", newGame: (...value) => { args = value; } };
+  ui.startSameGame();
+  assert.deepEqual(args, [ui.game.config, { mode: "intermediate", modeKey: "intermediate", label: "Intermedio" }]);
+});
+
+test("Nueva sesión exige confirmación y conserva datos si el guardado falla", () => {
+  const previous = { confirm: global.confirm, location: global.location, localStorage: global.localStorage };
+  let saved = null;
+  let reloads = 0;
+  try {
+    global.localStorage = { getItem: () => null, setItem: (_key, value) => { saved = value; } };
+    const store = new BP.Store();
+    store.progression.coins = 999;
+    const ui = Object.create(BP.UI.prototype);
+    ui.store = store;
+    ui.toast = () => {};
+    global.location = { reload: () => { reloads += 1; } };
+    global.confirm = () => false;
+    assert.equal(ui.startNewSession(), false);
+    assert.equal(store.progression.coins, 999);
+    global.confirm = () => true;
+    assert.equal(ui.startNewSession(), true);
+    assert.equal(store.progression.coins, 25);
+    assert.equal(JSON.parse(saved).progression.coins, 25);
+    assert.equal(reloads, 1);
+    store.progression.coins = 500;
+    global.localStorage.setItem = () => { throw new Error("sin almacenamiento"); };
+    assert.equal(ui.startNewSession(), false);
+    assert.equal(store.progression.coins, 500);
+    assert.equal(reloads, 1);
+  } finally {
+    global.confirm = previous.confirm;
+    global.location = previous.location;
+    global.localStorage = previous.localStorage;
+  }
+});
+
+test("en modo táctil Bandera se marca y con Visión X se inspecciona sin abrir", () => {
+  const handlers = {};
+  const view = Object.create(BP.BoardViewComponent.prototype);
+  let flags = 0, reveals = 0, scans = 0;
+  const cell = { dataset: { x: "2", y: "3" } };
+  const game = { status: "playing", powers: { freeze: { targeting: false, hammerMode: false } },
+    flag() { flags += 1; }, reveal() { reveals += 1; } };
+  Object.assign(view, { ui: { game }, boardEl: { addEventListener: (name, callback) => { handlers[name] = callback; } },
+    touchMode: "flag", xrayActive: false, lastTouchFlagAt: -Infinity, suppressClick: false,
+    cancelTouchTimer() {}, clearChordPreview() {}, setFace() {}, handleXrayPointerMove() { scans += 1; } });
+  view.bindBoardEvents();
+  const event = { target: { closest: () => cell }, pointerType: "touch", button: 0, clientX: 10, clientY: 10 };
+  handlers.pointerdown(event);
+  handlers.pointerup(event);
+  assert.equal(flags, 1);
+  view.xrayActive = true;
+  handlers.pointerdown(event);
+  handlers.pointerup(event);
+  assert.equal(scans, 1);
+  assert.equal(flags, 1);
+  assert.equal(reveals, 0);
 });
 
 test("contratos diarios se cobran una sola vez y se renuevan al día siguiente", () => {

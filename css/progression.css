@@ -2224,3 +2224,8 @@
 
 /* El muro prioriza tableros y acciones; las métricas completas están en Detalle. */
 .spec-card-stats-row, .spec-card-foot { display: none; }
+@media (max-width: 760px) {
+  .spectator-multi-grid { grid-template-columns: minmax(0, 1fr); }
+  .spectator-toolbar { flex-wrap: wrap; }
+  .spec-card-ctrls { flex-wrap: wrap; }
+}

@@ -5,3 +5,5 @@ Juego incremental de Buscaminas para navegador, sin instalación ni dependencias
 Las reglas de progresión y las ideas pendientes están en [GAME-DESIGN.md](GAME-DESIGN.md). El progreso se guarda en el navegador.
 
 Para ejecutar las pruebas: `node --test tests/progression-and-bots.test.js`.
+
+En móvil, elige **Abrir** o **Bandera** antes de tocar el tablero. Con Visión X activa, tocar inspecciona una casilla sin abrirla. Los tableros grandes se pueden desplazar. **Nueva partida** reinicia el tablero; **Nueva sesión** reinicia todo el progreso guardado tras confirmar.

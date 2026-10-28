@@ -31,7 +31,8 @@
       this.touchTimer = null;
       this.touchStart = null;
       this.suppressClick = false;
-      this.lastTouchFlagAt = 0;
+      this.lastTouchFlagAt = -Infinity;
+      this.touchMode = "reveal";
       this.chordCenter = null;
       this.powerFlashTimers = {};
       this.lastPing = 0;
@@ -55,6 +56,8 @@
       this.boardStartHint = $("#boardStartHint");
 
       this.resetBtn = $("#faceBtn");
+      this.touchReveal = $("#touchReveal");
+      this.touchFlag = $("#touchFlag");
       this.faceIcon = $("#faceIcon");
       this.mineCount = $("#mineCount");
       this.timer = $("#timer");
@@ -88,6 +91,8 @@
     }
 
     bindEvents() {
+      if (this.touchReveal) this.touchReveal.addEventListener("click", () => this.setTouchMode("reveal"));
+      if (this.touchFlag) this.touchFlag.addEventListener("click", () => this.setTouchMode("flag"));
       if (this.resetBtn) {
         this.resetBtn.addEventListener("click", () => {
           this.sound.play("click");
@@ -104,6 +109,16 @@
 
       this.bindBoardEvents();
       this.bindKeyboard();
+    }
+
+    setTouchMode(mode) {
+      this.touchMode = mode === "flag" ? "flag" : "reveal";
+      [[this.touchReveal, "reveal"], [this.touchFlag, "flag"]].forEach(([button, value]) => {
+        if (!button) return;
+        const active = this.touchMode === value;
+        button.classList.toggle("is-active", active);
+        button.setAttribute("aria-pressed", String(active));
+      });
     }
 
     bindBoardEvents() {
@@ -124,7 +139,7 @@
         if (event.pointerType === "touch") {
           this.touchStart = { x: event.clientX, y: event.clientY, cellX: x, cellY: y };
           this.cancelTouchTimer();
-          this.touchTimer = window.setTimeout(() => {
+          if (this.touchMode === "reveal" && !this.xrayActive) this.touchTimer = window.setTimeout(() => {
             this.suppressClick = true;
             this.lastTouchFlagAt = performance.now();
             this.game.flag(x, y);
@@ -168,6 +183,14 @@
             this.suppressClick = false;
             return;
           }
+          if (this.xrayActive) {
+            this.handleXrayPointerMove(event);
+            return;
+          }
+          if (this.touchMode === "flag" && !this.game.powers.freeze.targeting && !this.game.powers.freeze.hammerMode) {
+            this.game.flag(x, y);
+            return;
+          }
         }
 
         if (event.button === 0) {
@@ -208,11 +231,12 @@
         }
       });
 
-      this.boardEl.addEventListener("pointerleave", () => {
+      this.boardEl.addEventListener("pointerleave", (event) => {
         this.cancelTouchTimer();
         this.clearChordPreview();
         this.clearFreezeArea();
         this.clearHammerHover();
+        if (event.pointerType === "touch" && this.xrayActive) return;
         this.clearPeek();
         if (this.xrayActive && this.xrayCursor) this.xrayCursor.hidden = true;
       });

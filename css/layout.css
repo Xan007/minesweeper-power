@@ -136,6 +136,14 @@ details[open] > .contracts-head strong::before { content: "▾ "; }
 /* El tablero es la acción principal; el historial sigue disponible desde la barra de título. */
 .intel-panel { display: none; }
 
+@media (max-width: 760px) {
+  .topbar { flex-wrap: wrap; }
+  .top-actions { flex-wrap: wrap; justify-content: flex-end; }
+  .extractor-button, .extractor-upgrade { white-space: normal; overflow-wrap: anywhere; padding: 4px 6px; }
+  .toolbar-actions { display: flex; gap: 6px; }
+  .toolbar-actions .chip-btn { min-width: 0; }
+}
+
 /* Estación de clics: una acción principal y una inversión visible. */
 .extractor { display: grid; grid-template-columns: minmax(150px, 1fr) auto auto minmax(95px, 140px); align-items: center; gap: 8px; padding: 7px; margin: 0 0 7px; border: 2px solid; border-color: var(--white) var(--dark) var(--dark) var(--white); background: #d4d0c8; }
 .extractor-copy { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
@@ -342,6 +350,16 @@ details[open] > .contracts-head strong::before { content: "▾ "; }
   gap: 6px;
   margin-bottom: 6px;
   flex-wrap: wrap;
+}
+
+.touch-tools { display: none; align-items: center; gap: 6px; }
+.touch-tool { min-height: 44px; min-width: 84px; padding: 0 12px; border: 2px solid; border-color: var(--white) var(--dark) var(--dark) var(--white); background: var(--face); color: var(--black); font-weight: 700; }
+.touch-tool.is-active { border-color: var(--dark) var(--white) var(--white) var(--dark); background: #e5e5e5; outline: 2px solid #000080; outline-offset: -4px; }
+@media (max-width: 760px), (pointer: coarse) {
+  .touch-tools { display: flex; flex-wrap: wrap; width: 100%; order: 3; }
+  .touch-tools span { font-weight: 700; }
+  .touch-tool { flex: 1; }
+  .field input { font-size: 16px; }
 }
 
 .difficulty {

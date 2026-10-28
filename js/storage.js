@@ -243,6 +243,18 @@
       };
       this.save();
     }
+
+    resetAll() {
+      const previous = this.data;
+      this.data = createDefaultData();
+      this.save();
+      if (!this.available) {
+        this.data = previous;
+        this.memory = previous;
+        return false;
+      }
+      return true;
+    }
   }
 
   BP.Store = Store;

@@ -8,10 +8,10 @@
   <title>Buscaminas Power · Edición clásica</title>
   <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
   <link rel="stylesheet" href="css/base.css?v=classic-4">
-  <link rel="stylesheet" href="css/layout.css?v=classic-9">
+  <link rel="stylesheet" href="css/layout.css?v=mobile-11">
   <link rel="stylesheet" href="css/board.css?v=classic-10">
   <link rel="stylesheet" href="css/powers.css?v=classic-10">
-  <link rel="stylesheet" href="css/progression.css?v=classic-8">
+  <link rel="stylesheet" href="css/progression.css?v=mobile-11">
 </head>
 <body>
   <svg class="svg-sprite" aria-hidden="true" focusable="false">
@@ -356,6 +356,14 @@
                 <svg class="icon"><use href="#i-refresh"></use></svg>
                 <span>Nueva partida</span>
               </button>
+              <button class="chip-btn" id="newSessionBtn" type="button" title="Reiniciar todo el progreso">
+                Nueva sesión
+              </button>
+            </div>
+            <div class="touch-tools" role="group" aria-label="Acción táctil">
+              <span>Al tocar:</span>
+              <button class="touch-tool is-active" id="touchReveal" type="button" aria-pressed="true">Abrir</button>
+              <button class="touch-tool" id="touchFlag" type="button" aria-pressed="false">Bandera</button>
             </div>
           </div>
 
@@ -701,7 +709,7 @@
             <div><span>Tecla 5</span><kbd>Consejero</kbd></div>
             <div><span>Espacio / Enter</span><kbd>Cortar cable</kbd></div>
             <div><span>Esc</span><kbd>Cancelar modo</kbd></div>
-            <div><span>Táctil</span><kbd>Mantener = bandera</kbd></div>
+            <div><span>Táctil</span><kbd>Elegir Abrir o Bandera</kbd></div>
           </div>
         </section>
       </div>
@@ -710,7 +718,7 @@
         <h3><span class="help-num">03</span> Arsenal</h3>
         <div class="help-power-grid">
           <article><svg class="icon"><use href="#i-target"></use></svg><div><h4>Consejero · 3 usos</h4><p>Señala una jugada deducida de las pistas visibles. Revisa las banderas incorrectas y espera a que se derrita el hielo; si no encuentra una jugada segura, no consume carga. Compra más pistas en Cuartel → Mejoras.</p></div></article>
-          <article><svg class="icon"><use href="#i-eye"></use></svg><div><h4>Visión X</h4><p>Durante 6 s, el radar muestra el contenido real de las celdas cercanas al cursor.</p></div></article>
+          <article><svg class="icon"><use href="#i-eye"></use></svg><div><h4>Visión X</h4><p>Durante 6 s, apunta a una celda para ver su contenido. En móvil, tócala para inspeccionarla sin abrirla.</p></div></article>
           <article><svg class="icon"><use href="#i-tool"></use></svg><div><h4>Kit de desarme</h4><p>Si pisas una mina, pulsa <b>Espacio</b> o haz clic cuando la aguja cruce la sección blanca.</p></div></article>
           <article><svg class="icon"><use href="#i-shield"></use></svg><div><h4>Inmortalidad</h4><p>Protege durante 6 clics y neutraliza las minas que pises. Las mejoras amplían su duración.</p></div></article>
           <article><svg class="icon"><use href="#i-snow"></use></svg><div><h4>Cañón criogénico</h4><p>Congela hasta 3 celdas y rómpelas con el martillo antes de que se derritan.</p></div></article>
@@ -967,7 +975,7 @@
   <script src="js/progression.js?v=classic-10" defer></script>
   <script src="js/components/contracts.js?v=classic-8" defer></script>
   <script src="js/components/extractor.js?v=classic-9" defer></script>
-  <script src="js/storage.js?v=classic-9" defer></script>
+  <script src="js/storage.js?v=mobile-11" defer></script>
   <script src="js/audio.js?v=classic-4" defer></script>
   <script src="js/effects.js?v=classic-8" defer></script>
   <script src="js/board.js?v=classic-4" defer></script>
@@ -977,10 +985,10 @@
   <script src="js/bots.js?v=classic-9" defer></script>
   <script src="js/game.js?v=classic-10" defer></script>
   <script src="js/components/modals.js?v=classic-10" defer></script>
-  <script src="js/components/board-view.js?v=classic-10" defer></script>
+  <script src="js/components/board-view.js?v=mobile-11" defer></script>
   <script src="js/components/hq.js?v=classic-5" defer></script>
   <script src="js/components/spectator.js?v=classic-8" defer></script>
-  <script src="js/ui.js?v=classic-10" defer></script>
+  <script src="js/ui.js?v=mobile-11" defer></script>
   <script src="js/app.js?v=classic-4" defer></script>
 </body>
 </html>
