@@ -4,7 +4,7 @@
   const BP = (window.BP = window.BP || {});
   const key = (cell) => `${cell.x},${cell.y}`;
 
-  function analyze(board, knownMines = new Set()) {
+  function analyze(board, knownMines = new Set(), options = {}) {
     const constraints = [];
     const hidden = [];
     board.forEach((cell) => {
@@ -28,7 +28,7 @@
     };
     constraints.forEach((constraint) => mark(constraint.cells, constraint.mines));
     // Si un conjunto está contenido en otro, la diferencia también es una pista.
-    constraints.forEach((a) => constraints.forEach((b) => {
+    if (options.advanced !== false) constraints.forEach((a) => constraints.forEach((b) => {
       if (a === b || a.cells.length >= b.cells.length) return;
       const aKeys = new Set(a.cells.map(key));
       if (!a.cells.every((cell) => b.cells.some((other) => key(other) === key(cell)))) return;
@@ -43,7 +43,7 @@
       const related = constraints.filter((constraint) => constraint.cells.includes(cell));
       // Una aproximación local conservadora, no una probabilidad exacta.
       const risk = related.length ? Math.max(...related.map((c) => c.mines / c.cells.length)) : baseline;
-      return { cell, risk };
+      return { cell, risk, hasClue: related.length > 0 };
     });
     return { safe: [...safe.values()].filter((cell) => !mines.has(key(cell))), mines: [...mines.values()], risks };
   }

@@ -522,3 +522,30 @@ test("mejorar habilidades amplia el hielo y la vision", () => {
   assert.ok(max.xray.duration > base.xray.duration);
   assert.ok(max.xray.radius > base.xray.radius);
 });
+
+test("el bot abre una celda segura cercana antes de arriesgar", () => {
+  const runner = Object.create(BP.BotRunner.prototype);
+  const near = { x: 1, y: 0 }, far = { x: 8, y: 8 }, doubtful = { x: 2, y: 0 };
+  runner.manager = { store: { progression: BP.Progression.createState() } };
+  runner.board = { reveal: (x, y) => { assert.deepEqual([x, y], [1, 0]); return { kind: "safe" }; }, allSafeRevealed: () => false };
+  runner.lastMove = { x: 0, y: 0 };
+  runner.hiddenCells = () => [near, far, doubtful];
+  runner.analyze = () => ({ safe: [near, far], mines: [], risks: [] });
+  runner.setThought = (text) => { assert.match(text, /segura/); };
+  runner.updateProgress = () => {};
+  runner.steps = 0;
+  runner.step(1000);
+  assert.deepEqual(runner.lastMove, { x: 1, y: 0 });
+});
+
+test("el analisis sencillo y avanzado mantienen las deducciones basicas", () => {
+  const board = new BP.Board(3, 2, 1);
+  board.generated = true;
+  board.getCell(0, 0).revealed = true;
+  board.getCell(0, 0).adjacent = 1;
+  board.getCell(1, 0).flagged = true;
+  for (const advanced of [false, true]) {
+    const result = BP.BotBrain.analyze(board, new Set(), { advanced });
+    assert.ok(result.safe.some((cell) => cell.x === 0 && cell.y === 1));
+  }
+});

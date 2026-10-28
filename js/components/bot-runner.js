@@ -70,6 +70,7 @@
 
       this.useFlags = this.bot.useFlags !== false;
       this.knownMines = new Set();
+      this.lastMove = null;
       this.preset = preset;
       this.board = new BP.Board(preset.width, preset.height, preset.mines);
       const startX = Math.floor(preset.width / 2);
@@ -185,13 +186,10 @@
       let target = null;
 
       if (analysis.safe.length > 0) {
-        const level = stateLevel(this.manager.store.progression);
-        const reliability = 0.82 + level * 0.025 - (this.useFlags ? 0 : 0.12);
-        const overlooked = hidden.filter((cell) => !analysis.safe.includes(cell));
-        target = Math.random() < reliability ? pickRandom(analysis.safe) : (pickRandom(overlooked) || pickRandom(analysis.safe));
+        target = this.pickNearby(analysis.safe);
         this.status = "solving";
         this.setThought(
-          `Revisando (${target.x + 1}, ${target.y + 1}).`,
+          `Las pistas indican que (${target.x + 1}, ${target.y + 1}) es segura.`,
           "safe",
           target
         );
@@ -251,24 +249,24 @@
           }
         }
 
-        if (Math.random() < this.accuracy && analysis.risks.length > 0) {
-          const lowestRisk = Math.min(...analysis.risks.map((item) => item.risk));
-          target = pickRandom(analysis.risks.filter((item) => item.risk === lowestRisk)).cell;
+        // Como un jugador, evita las minas deducidas y sopesa las pistas visibles.
+        const candidates = analysis.risks.filter(({ cell }) => !analysis.mines.includes(cell));
+        const frontier = candidates.filter((item) => item.hasClue);
+        const pool = frontier.length ? frontier : candidates;
+        const skill = this.accuracy * (this.useFlags === false ? 0.7 : 1);
+        if (pool.length && Math.random() < skill) {
+          const lowestRisk = Math.min(...pool.map((item) => item.risk));
+          target = this.pickNearby(pool.filter((item) => item.risk === lowestRisk).map((item) => item.cell));
           this.status = "intuition";
-          this.setThought(
-            `Menor riesgo estimado: ${Math.round(lowestRisk * 100)}% en (${target.x + 1}, ${target.y + 1}).`,
-            "intuition",
-            target
-          );
+          this.setThought(`No hay jugada segura; pruebo el menor riesgo estimado: ${Math.round(lowestRisk * 100)}%.`, "intuition", target);
+        } else if (pool.length) {
+          target = this.pickNearby(pool.map((item) => item.cell));
+          this.status = "guessing";
+          this.setThought("No encuentro una jugada segura; pruebo cerca de las pistas.", "guess", target);
         } else {
           target = pickRandom(hidden);
           this.status = "guessing";
-          const accPct = Math.round(this.accuracy * 100);
-          this.setThought(
-            `Sin datos certeros: arriesgando en (${target.x + 1}, ${target.y + 1}) (Análisis: ${accPct}%).`,
-            "guess",
-            target
-          );
+          this.setThought("Sin pistas suficientes; tengo que arriesgar.", "guess", target);
         }
       }
 
@@ -290,14 +288,24 @@
         return;
       }
 
-      this.status = "solving";
+      this.lastMove = { x: target.x, y: target.y };
       this.updateProgress();
       if (this.board.allSafeRevealed()) this.finishWin(now);
+    }
+
+    pickNearby(cells) {
+      if (!cells.length) return null;
+      const origin = this.lastMove || this.targetCell;
+      if (!origin) return pickRandom(cells);
+      const distance = (cell) => Math.max(Math.abs(cell.x - origin.x), Math.abs(cell.y - origin.y));
+      const nearest = Math.min(...cells.map(distance));
+      return pickRandom(cells.filter((cell) => distance(cell) === nearest));
     }
 
     rememberMine(cell) {
       if (this.useFlags !== false) this.board.toggleFlag(cell.x, cell.y);
       else this.knownMines.add(`${cell.x},${cell.y}`);
+      this.lastMove = { x: cell.x, y: cell.y };
     }
 
     hiddenCells() {
@@ -309,7 +317,9 @@
     }
 
     analyze() {
-      return BP.BotBrain.analyze(this.board, this.knownMines);
+      const level = stateLevel(this.manager.store.progression);
+      const advancedChance = (0.1 + level * 0.12) * (this.useFlags === false ? 0.65 : 1);
+      return BP.BotBrain.analyze(this.board, this.knownMines, { advanced: Math.random() < advancedChance });
     }
 
     pickFreezeCenter(hidden) {
