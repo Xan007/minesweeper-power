@@ -144,3 +144,12 @@ body { font-size: 13px; color: var(--ui-ink); }
 @keyframes coin-reward-pulse { 0%,100% { transform: scale(1); color: inherit; } 30% { transform: scale(1.42); color: #9a5700; } 55% { transform: scale(1.1); color: #000; } }
 @keyframes coin-reward-rise { 0% { opacity: 0; transform: translate(-50%, 5px) scale(.8); } 20% { opacity: 1; transform: translate(-50%, 0) scale(1.08); } 75% { opacity: 1; } 100% { opacity: 0; transform: translate(-50%, -20px) scale(1); } }
 @media (prefers-reduced-motion: reduce) { .coin-reward-pulse, .coin-reward-popup { animation: none; } .coin-reward-popup { transform: translateX(-50%); } }
+
+/* Habilidades de bots: carga legible y pulso breve sobre la casilla utilizada. */
+.spec-card-skill-pip { min-height: 20px; gap: 4px; }
+.spec-card-skill-pip.is-equipped { color: #163b20; }
+.spec-card-skill-pip.is-equipped span { font-size: 8px; white-space: nowrap; }
+.spec-bot-card.is-using-skill { animation: bot-skill-card .65s ease-out; }
+.spec-mini-board .cell.is-bot-skill-target { position: relative; z-index: 1; outline: 2px solid var(--bot-skill-color, #65a5ff); box-shadow: 0 0 0 2px #fff, 0 0 10px var(--bot-skill-color, #65a5ff); animation: bot-skill-cell .65s ease-out; }
+@keyframes bot-skill-card { 25%, 70% { box-shadow: 0 0 0 2px var(--bot-skill-color), 0 0 14px color-mix(in srgb, var(--bot-skill-color) 55%, transparent); } }
+@keyframes bot-skill-cell { 0%, 100% { filter: brightness(1); } 35% { filter: brightness(1.7); } }

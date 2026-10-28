@@ -664,17 +664,29 @@
         const arsenalWrap = card.querySelector(".spec-card-arsenal");
         if (arsenalWrap) {
           const equipped = bot.skills || {};
-          arsenalWrap.innerHTML = P.SKILL_IDS.map((id) => {
-            const def = P.SKILL_DEFS[id];
-            const isEq = Boolean(equipped[id]);
-            const charges = runner && runner.charges ? (runner.charges[id] || 0) : 0;
-            return `
-              <span class="spec-card-skill-pip${isEq ? " is-equipped" : ""}" title="${def.name}: ${charges} cargas">
-                ${U.icon(def.icon)}
-                <span>${isEq ? charges : "-"}</span>
-              </span>
-            `;
-          }).join("");
+          const skillKey = P.SKILL_IDS.map((id) => `${id}:${equipped[id] ? 1 : 0}:${runner && runner.charges ? runner.charges[id] || 0 : 0}`).join("|");
+          if (arsenalWrap.dataset.skillKey !== skillKey) {
+            arsenalWrap.dataset.skillKey = skillKey;
+            arsenalWrap.innerHTML = P.SKILL_IDS.map((id) => {
+              const def = P.SKILL_DEFS[id];
+              const isEq = Boolean(equipped[id]);
+              const charges = runner && runner.charges ? (runner.charges[id] || 0) : 0;
+              return `<span class="spec-card-skill-pip${isEq ? " is-equipped" : ""}" title="${def.name}: ${isEq ? `${charges} intentos restantes` : "No equipada"}" aria-label="${def.short}: ${isEq ? `${charges} intentos restantes` : "no equipada"}">${U.icon(def.icon)}<span>${isEq ? `${charges} restantes` : "?"}</span></span>`;
+            }).join("");
+          }
+          const event = runner && runner.skillEvent;
+          if (event && event.at > Number(card.dataset.skillEventAt || 0)) {
+            card.dataset.skillEventAt = String(event.at);
+            card.classList.remove("is-using-skill");
+            const target = card.querySelector(".spec-mini-board");
+            if (target) {
+              const cell = target.querySelector(`[data-x="${event.x}"][data-y="${event.y}"]`);
+              if (cell) cell.classList.add("is-bot-skill-target");
+              card.style.setProperty("--bot-skill-color", ({ xray: "#49b867", freeze: "#58c8f4", immortal: "#e7ad32", defuse: "#e87947" })[event.id] || "#65a5ff");
+              card.classList.add("is-using-skill");
+              window.setTimeout(() => { card.classList.remove("is-using-skill"); if (cell) cell.classList.remove("is-bot-skill-target"); }, 650);
+            }
+          }
         }
 
         const miniBoardEl = card.querySelector(".spec-mini-board");

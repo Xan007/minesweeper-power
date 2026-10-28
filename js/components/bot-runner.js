@@ -39,7 +39,15 @@
       this.thoughtType = "info";
       this.thoughtHistory = [];
       this.targetCell = null;
+      this.skillEvent = null;
       this.startBoard();
+    }
+
+    useSkill(id, target, text) {
+      this.charges[id] = Math.max(0, (this.charges[id] || 0) - 1);
+      this.used[id] = (this.used[id] || 0) + 1;
+      this.skillEvent = { id, x: target.x, y: target.y, at: performance.now(), text };
+      this.setThought(text, "skill", target);
     }
 
     setThought(text, type = "info", target = null) {
@@ -210,8 +218,8 @@
         if (this.charges.freeze > 0) {
           const center = this.pickFreezeCenter(hidden);
           if (center) {
-            this.charges.freeze -= 1;
-            this.used.freeze += 1;
+            const text = `Disparo criog?nico en (${center.x + 1}, ${center.y + 1}).`;
+            this.useSkill("freeze", center, text);
             this.board.freezeArea(center.x, center.y, 0);
             this.steps += 1;
             this.status = "freeze";
@@ -347,8 +355,7 @@
       this.targetCell = cell;
 
       if (this.charges.immortal > 0) {
-        this.charges.immortal -= 1;
-        this.used.immortal += 1;
+        this.useSkill("immortal", cell, `Escudo absorbi? mina en (${cell.x + 1}, ${cell.y + 1}).`);
         this.board.defuse(cell);
         this.steps += 1;
         this.status = "shield";
@@ -363,8 +370,7 @@
       }
 
       if (this.charges.defuse > 0) {
-        this.charges.defuse -= 1;
-        this.used.defuse += 1;
+        this.useSkill("defuse", cell, `Kit neutraliz? mina en (${cell.x + 1}, ${cell.y + 1}).`);
         this.board.defuse(cell);
         this.steps += 1;
         this.status = "defuse";
