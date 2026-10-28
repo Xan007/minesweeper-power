@@ -120,6 +120,8 @@
       this.rewardDetails = null;
       this.elapsedMs = 0;
       this.startTs = 0;
+      this.lastRevealAt = null;
+      this.recentRapidInput = false;
 
       this.ui.buildBoard(this.board);
       this.ui.setDifficultyActive(this.mode);
@@ -205,6 +207,7 @@
         return;
       }
 
+      this.trackBoardInput();
       if (cell.revealed || cell.flagged) return;
       this.ui.clearHint();
 
@@ -215,14 +218,28 @@
       if (result.kind === "mine") {
         this.handleMine(cell, shieldWasActive);
       } else if (result.kind === "safe") {
-        this.afterSafeReveal(result.changed);
+        this.afterSafeReveal(result.changed, result.brokenFrozen);
       }
 
       this.afterShieldAction(shieldWasActive);
     }
 
-    afterSafeReveal(changed) {
+    trackBoardInput() {
+      const now = performance.now();
+      this.recentRapidInput = Number.isFinite(this.lastRevealAt) && now - this.lastRevealAt < 350;
+      this.lastRevealAt = now;
+    }
+
+    afterSafeReveal(changed, brokenFrozen = []) {
       if (!changed || changed.length === 0) return;
+      if (brokenFrozen.length) {
+        const power = this.powers.freeze;
+        brokenFrozen.forEach((cell) => power.frozen.delete(`${cell.x},${cell.y}`));
+        this.ui.completeFreeze(brokenFrozen);
+        this.ui.updateFreezeStatus(power);
+        this.sound.play("iceShatter");
+        if (!power.frozen.size) this.stopFreezeThawTicker();
+      }
       this.lastActionAt = performance.now();
       this.ui.revealCells(changed);
       this.sound.play(changed.length > 10 ? "revealBig" : "reveal");
@@ -255,7 +272,6 @@
           else this.fx.shield(element);
         }
         this.store.addCoins(15);
-        this.sound.play("coin");
         this.ui.refreshProgression();
         this.ui.toast("¡Rayo celestial! El escudo fulminó la mina (+15 monedas).", "success");
         this.ui.updateHud(this);
@@ -297,6 +313,7 @@
       if (this.status !== "playing" || this.defuseActive || !this.board) return;
       if (this.powers.freeze.targeting || this.powers.freeze.hammerMode) return;
       if (!this.board.canChord(x, y)) return;
+      this.trackBoardInput();
       this.ui.clearHint();
 
       const shieldWasActive = this.powers.immortal.active;
@@ -306,7 +323,7 @@
       if (result.kind === "mine") {
         this.handleMine(result.cell, shieldWasActive);
       } else if (result.kind === "safe") {
-        this.afterSafeReveal(result.changed);
+        this.afterSafeReveal(result.changed, result.brokenFrozen);
       }
 
       this.afterShieldAction(shieldWasActive);
@@ -665,7 +682,7 @@
         if (result.kind === "mine") {
           this.handleMine(cell, false);
         } else if (result.kind === "safe") {
-          this.afterSafeReveal(result.changed);
+          this.afterSafeReveal(result.changed, result.brokenFrozen);
           this.ui.completeFreeze([cell]);
         }
       }
@@ -865,7 +882,10 @@
       const targetWidth = U.clamp(43 - density * 55, 30, 40);
       const speed = 195 + density * 370;
 
+      const reactionDelayMs = this.recentRapidInput ? 1000 : 0;
+      this.recentRapidInput = false;
       this.defuse.start({
+        reactionDelayMs,
         targetWidth,
         speed,
         onCut: (info) => {
@@ -900,7 +920,6 @@
           if (this.fx && this.fx.defuseCut) this.fx.defuseCut(element, true);
           else this.fx.defuse(element);
         }
-        this.sound.play("coin");
         this.store.addCoins(10);
         this.ui.refreshProgression();
         this.ui.toast("Corte limpio · mina neutralizada. +10 monedas.", "success");

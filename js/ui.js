@@ -18,7 +18,6 @@
       this.bots = null;
       this.currentView = "play";
       this.tipIndex = 0;
-      this._lastCoins = store && store.progression ? store.progression.coins : 0;
 
       // Componentes modulares
       this.modals = new BP.ModalsComponent({ ui: this, store, sound, fx });
@@ -45,6 +44,8 @@
 
       this.coinChip = $("#coinChip");
       this.coinCount = $("#coinCount");
+      this.coinFeedback = new BP.CoinFeedback({ store, sound, fx, counter: this.coinCount, chip: this.coinChip });
+      if (store) store.onCoinsAdded = (amount) => this.coinFeedback.add(amount);
       this.coreCoinsValue = $("#coreCoinsValue");
       this.coreBots = $("#coreBots");
       this.coreActive = $("#coreActive");
@@ -80,9 +81,6 @@
       this.bots = bots;
       if (this.bots) {
         this.bots.onNetworkReward = ({ level, reward }) => {
-          this.sound.play("coin");
-          this.fx.coinBurst(this.coinChip, 22);
-          this.fx.shakeHeavy();
           this.toast(`Operación ${level} completada · +${BP.Progression.formatCoins(reward)} monedas`, "success", 4200);
         };
         this.bots.onUpdate = () => {
@@ -224,16 +222,7 @@
       const maxBots = P.maxBots(state);
 
       const formattedCoins = P.formatCoins(state.coins);
-      const prevCoins = typeof this._lastCoins === "number" ? this._lastCoins : state.coins;
-      if (this.coinCount) {
-        this.coinCount.textContent = formattedCoins;
-      }
-      if (state.coins > prevCoins && this.coinChip) {
-        this.coinChip.classList.remove("is-bump");
-        void this.coinChip.offsetWidth;
-        this.coinChip.classList.add("is-bump");
-      }
-      this._lastCoins = state.coins;
+      if (this.coinCount) this.coinCount.textContent = formattedCoins;
 
       if (this.coreCoinsValue) this.coreCoinsValue.textContent = formattedCoins;
       if (this.coreBots) this.coreBots.textContent = `${state.bots.length}/${maxBots}`;

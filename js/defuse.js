@@ -44,6 +44,8 @@
       this.direction = 1;
       this.raf = null;
       this.lastTime = 0;
+      this.readyAt = 0;
+      this.preparing = false;
       this.callbacks = {};
       this.hideTimer = null;
       this.focusTimer = null;
@@ -116,15 +118,33 @@
       this.overlay.setAttribute("aria-hidden", "false");
       document.body.classList.add("is-defusing");
 
+      const delay = Math.max(0, Number(options.reactionDelayMs) || 0);
       this.lastTime = performance.now();
+      this.readyAt = this.lastTime + delay;
+      this.preparing = delay > 0;
+      if (this.preparing) {
+        this.cutButton.disabled = true;
+        this.precisionEl.textContent = "PREPÁRATE · 1.0 s";
+      }
       this.raf = requestAnimationFrame((time) => this.loop(time));
       this.focusTimer = window.setTimeout(() => {
-        if (this.active && this.cutButton) this.cutButton.focus({ preventScroll: true });
-      }, 80);
+        if (this.active && this.cutButton && !this.cutButton.disabled) this.cutButton.focus({ preventScroll: true });
+      }, delay + 80);
     }
 
     loop(time) {
       if (!this.active || this.resolved) return;
+      if (time < this.readyAt) {
+        this.lastTime = time;
+        this.precisionEl.textContent = `PREPÁRATE · ${((this.readyAt - time) / 1000).toFixed(1)} s`;
+        this.raf = requestAnimationFrame((next) => this.loop(next));
+        return;
+      }
+      if (this.preparing) {
+        this.preparing = false;
+        this.cutButton.disabled = false;
+        this.precisionEl.textContent = "LISTO · DETÉN LA AGUJA EN BLANCO";
+      }
       const dt = Math.min(0.05, Math.max(0.001, (time - this.lastTime) / 1000));
       this.lastTime = time;
       this.angle = (this.angle + this.direction * this.speed * dt + 360) % 360;
@@ -138,7 +158,7 @@
     }
 
     cut() {
-      if (!this.active || this.resolved) return null;
+      if (!this.active || this.resolved || performance.now() < this.readyAt) return null;
       this.resolved = true;
       if (this.raf) cancelAnimationFrame(this.raf);
       this.raf = null;
@@ -206,6 +226,8 @@
       this.focusTimer = null;
       this.active = false;
       this.resolved = false;
+      this.preparing = false;
+      this.readyAt = 0;
       this.callbacks = {};
       if (hide && this.overlay) {
         this.overlay.hidden = true;

@@ -147,7 +147,7 @@
       }
     }
 
-    _revealFrom(start) {
+    _revealFrom(start, brokenFrozen = []) {
       const changed = [];
       const queued = new Set();
       const stack = [start];
@@ -155,8 +155,12 @@
 
       while (stack.length > 0) {
         const cell = stack.pop();
-        if (!cell || cell.revealed || cell.flagged || cell.frozen) continue;
+        if (!cell || cell.revealed || cell.flagged) continue;
         if (cell.mine && !cell.defused) continue;
+        if (cell.frozen) {
+          cell.frozen = false;
+          brokenFrozen.push(cell);
+        }
 
         cell.revealed = true;
         if (!cell.mine) this.revealedSafeCount += 1;
@@ -164,7 +168,7 @@
 
         if (!cell.mine && cell.adjacent === 0) {
           this.neighbors(cell.x, cell.y).forEach((neighbor) => {
-            if (neighbor.revealed || neighbor.flagged || neighbor.frozen) return;
+            if (neighbor.revealed || neighbor.flagged) return;
             if (neighbor.mine && !neighbor.defused) return;
             const key = neighbor.y * this.width + neighbor.x;
             if (queued.has(key)) return;
@@ -186,8 +190,9 @@
       if (cell.mine) {
         return { kind: "mine", cell, changed: [] };
       }
-      const changed = this._revealFrom(cell);
-      return { kind: "safe", cell, changed };
+      const brokenFrozen = [];
+      const changed = this._revealFrom(cell, brokenFrozen);
+      return { kind: "safe", cell, changed, brokenFrozen };
     }
 
     toggleFlag(x, y) {
@@ -224,13 +229,14 @@
       }
 
       let changed = [];
+      const brokenFrozen = [];
       hidden.forEach((neighbor) => {
         if (neighbor.mine && !neighbor.defused) return;
         if (neighbor.revealed) return;
-        changed = changed.concat(this._revealFrom(neighbor));
+        changed = changed.concat(this._revealFrom(neighbor, brokenFrozen));
       });
 
-      return { kind: "safe", changed };
+      return { kind: "safe", changed, brokenFrozen };
     }
 
     canChord(x, y) {

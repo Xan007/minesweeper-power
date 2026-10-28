@@ -136,3 +136,11 @@ body { font-size: 13px; color: var(--ui-ink); }
 #board .cell .peek[data-kind="obscured"] { background: repeating-linear-gradient(0deg, rgba(5,37,18,.2) 0 1px, transparent 1px 4px), #071b0d; box-shadow: inset 1px 1px rgba(194,255,207,.1), inset -1px -1px #001006; }
 
 #board .cell .peek[data-kind="obscured"] .peek-content::before { content: ""; width: 40%; height: 20%; background: rgba(115,255,156,.18); border-radius: 50%; filter: blur(4px); }
+
+/* La recompensa anima el numero, no la posicion del tablero ni del boton. */
+#coinCount, #hqCoins { display: inline-block; transform-origin: center; }
+.coin-reward-pulse { animation: coin-reward-pulse .55s cubic-bezier(.2,.8,.2,1); }
+.coin-reward-popup { position: fixed; z-index: 510; pointer-events: none; color: #fff4a0; background: #634600; border: 1px solid #fff4a0; padding: 2px 6px; font: bold 14px Consolas, monospace; white-space: nowrap; box-shadow: 1px 1px 0 #000; animation: coin-reward-rise .9s ease-out forwards; }
+@keyframes coin-reward-pulse { 0%,100% { transform: scale(1); color: inherit; } 30% { transform: scale(1.42); color: #9a5700; } 55% { transform: scale(1.1); color: #000; } }
+@keyframes coin-reward-rise { 0% { opacity: 0; transform: translate(-50%, 5px) scale(.8); } 20% { opacity: 1; transform: translate(-50%, 0) scale(1.08); } 75% { opacity: 1; } 100% { opacity: 0; transform: translate(-50%, -20px) scale(1); } }
+@media (prefers-reduced-motion: reduce) { .coin-reward-pulse, .coin-reward-popup { animation: none; } .coin-reward-popup { transform: translateX(-50%); } }
