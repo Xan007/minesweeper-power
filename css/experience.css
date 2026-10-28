@@ -153,3 +153,12 @@ body { font-size: 13px; color: var(--ui-ink); }
 .spec-mini-board .cell.is-bot-skill-target { position: relative; z-index: 1; outline: 2px solid var(--bot-skill-color, #65a5ff); box-shadow: 0 0 0 2px #fff, 0 0 10px var(--bot-skill-color, #65a5ff); animation: bot-skill-cell .65s ease-out; }
 @keyframes bot-skill-card { 25%, 70% { box-shadow: 0 0 0 2px var(--bot-skill-color), 0 0 14px color-mix(in srgb, var(--bot-skill-color) 55%, transparent); } }
 @keyframes bot-skill-cell { 0%, 100% { filter: brightness(1); } 35% { filter: brightness(1.7); } }
+
+/* Controles de compra junto a su habilidad, sin abrir otra ventana. */
+.power-purchase-row { display: grid; grid-template-columns: minmax(0,1fr) 96px; gap: 4px; align-items: stretch; }
+.power-buy-inline { font: bold 11px Tahoma, sans-serif; padding: 4px; cursor: pointer; }
+.power-buy-inline:disabled { cursor: default; opacity: .65; }
+.power-card.is-locked { opacity: .55; }
+.spec-card-arsenal { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 4px; width: 100%; }
+.spec-card-skill-pip { min-width: 0; font-size: 10px; }
+@media (prefers-reduced-motion: reduce) { .spec-bot-card.is-using-skill, .spec-mini-board .cell.is-bot-skill-target { animation: none; } }

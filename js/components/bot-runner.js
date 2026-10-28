@@ -80,6 +80,7 @@
       this.knownMines = new Set();
       this.lastMove = null;
       this.preset = preset;
+      this.boardDifficulty = difficulty;
       this.board = new BP.Board(preset.width, preset.height, preset.mines);
       const startX = Math.floor(preset.width / 2);
       const startY = Math.floor(preset.height / 2);
@@ -218,7 +219,7 @@
         if (this.charges.freeze > 0) {
           const center = this.pickFreezeCenter(hidden);
           if (center) {
-            const text = `Disparo criog?nico en (${center.x + 1}, ${center.y + 1}).`;
+            const text = `Disparo criogénico en (${center.x + 1}, ${center.y + 1}).`;
             this.useSkill("freeze", center, text);
             this.board.freezeArea(center.x, center.y, 0);
             this.steps += 1;
@@ -237,8 +238,7 @@
         if (this.charges.xray > 0) {
           const peek = pickRandom(hidden);
           if (peek) {
-            this.charges.xray -= 1;
-            this.used.xray += 1;
+            this.useSkill("xray", peek, "Escaneando celda con rayos X.");
             this.status = "scan";
             this.setThought(
               `Zona dudosa: activando Visión X en (${peek.x + 1}, ${peek.y + 1}).`,
@@ -355,7 +355,7 @@
       this.targetCell = cell;
 
       if (this.charges.immortal > 0) {
-        this.useSkill("immortal", cell, `Escudo absorbi? mina en (${cell.x + 1}, ${cell.y + 1}).`);
+        this.useSkill("immortal", cell, `Escudo absorbió mina en (${cell.x + 1}, ${cell.y + 1}).`);
         this.board.defuse(cell);
         this.steps += 1;
         this.status = "shield";
@@ -370,7 +370,7 @@
       }
 
       if (this.charges.defuse > 0) {
-        this.useSkill("defuse", cell, `Kit neutraliz? mina en (${cell.x + 1}, ${cell.y + 1}).`);
+        this.useSkill("defuse", cell, `Kit neutralizó mina en (${cell.x + 1}, ${cell.y + 1}).`);
         this.board.defuse(cell);
         this.steps += 1;
         this.status = "defuse";

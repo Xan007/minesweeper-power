@@ -235,7 +235,7 @@
       if (this.networkGoal) this.networkGoal.textContent = unlocked ? `${network.progress} / ${goal} victorias · +${P.formatCoins(P.networkReward(network.level))}` : "Bloqueada";
       if (this.networkProgress) this.networkProgress.style.width = unlocked ? `${100 * network.progress / goal}%` : "0%";
       if (this.networkHint) this.networkHint.textContent = unlocked
-        ? "Cada victoria aporta un escaneo para otro bot. Completa la operación para ganar monedas."
+        ? `Requiere ${P.networkDifficulty(network.level) === "expert" ? "Experto" : "Intermedio o Experto"}. Las victorias comparten escaneos.`
         : "Contrata un segundo bot en el Cuartel para desbloquear operaciones y apoyo compartido.";
       if (this.networkScans) this.networkScans.textContent = unlocked ? `Escaneos disponibles: ${network.scans.length}/6 · apoyos usados: ${network.assists}` : "";
       const isTurbo = this.bots.isTurboActive;
@@ -671,7 +671,7 @@
               const def = P.SKILL_DEFS[id];
               const isEq = Boolean(equipped[id]);
               const charges = runner && runner.charges ? (runner.charges[id] || 0) : 0;
-              return `<span class="spec-card-skill-pip${isEq ? " is-equipped" : ""}" title="${def.name}: ${isEq ? `${charges} intentos restantes` : "No equipada"}" aria-label="${def.short}: ${isEq ? `${charges} intentos restantes` : "no equipada"}">${U.icon(def.icon)}<span>${isEq ? `${charges} restantes` : "?"}</span></span>`;
+              return `<span class="spec-card-skill-pip${isEq ? " is-equipped" : ""}" title="${def.name}: ${isEq ? `${charges} intentos restantes` : "No equipada"}" aria-label="${def.short}: ${isEq ? `${charges} intentos restantes` : "no equipada"}">${U.icon(def.icon)}<span>${def.short} ${isEq ? `/ ${charges}` : "/ -"}</span></span>`;
             }).join("");
           }
           const event = runner && runner.skillEvent;

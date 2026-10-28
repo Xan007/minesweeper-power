@@ -175,7 +175,7 @@
         name: `Scout-${String(number).padStart(2, "0")}`,
         difficulty: "beginner",
         useFlags: true,
-        skills: { xray: false, defuse: false, immortal: false, freeze: false },
+        skills: { ...BP.Progression.DEFAULT_BOT_SKILLS },
         wins: 0,
         losses: 0,
         boards: 0,
@@ -221,6 +221,7 @@
       if (!this.store.spendCoins(cost)) return { ok: false, reason: "coins", cost };
 
       this.state.skills[id] = level + 1;
+      if (!BP.Progression.skillUnlocked(id, level)) this.state.bots.forEach((bot) => { bot.skills[id] = true; });
       this.store.addProgressionLog(`${def.name} · nivel ${level + 1} · -${cost} monedas`, "success");
       this.store.save();
       this.emit();
@@ -245,7 +246,7 @@
       if (!bot || !BP.Progression.SKILL_IDS.includes(skillId)) {
         return { ok: false, reason: "unknown" };
       }
-      if (!this.state.skills[skillId]) return { ok: false, reason: "locked" };
+      if (!BP.Progression.skillUnlocked(skillId, this.state.skills[skillId])) return { ok: false, reason: "locked" };
       bot.skills[skillId] = !bot.skills[skillId];
       this.store.save();
       this.emit();
@@ -263,10 +264,12 @@
       return source ? source.name : "Otro bot";
     }
 
-    recordNetworkWin(bot) {
+    recordNetworkWin(bot, difficulty = bot.difficulty) {
       const network = this.state.network;
       if (this.state.bots.length < 2) return null;
       if (network.scans.length < 6) network.scans.push(bot.id);
+      const required = BP.Progression.networkDifficulty(network.level);
+      if (difficulty !== "expert" && difficulty !== required) return null;
       network.progress += 1;
       const goal = BP.Progression.networkGoal(network.level);
       if (network.progress < goal) return null;
@@ -291,7 +294,7 @@
         state.botLosses += 1;
       }
 
-      const networkReward = win ? this.recordNetworkWin(bot) : null;
+      const networkReward = win ? this.recordNetworkWin(bot, runner.boardDifficulty) : null;
 
       if (reward > 0) {
         bot.coins = (bot.coins || 0) + reward;

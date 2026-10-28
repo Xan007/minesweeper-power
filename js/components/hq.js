@@ -163,7 +163,7 @@
 
           const skillChips = P.SKILL_IDS.map((id) => {
             const def = P.SKILL_DEFS[id];
-            const unlocked = Boolean(state.skills[id]);
+            const unlocked = P.skillUnlocked(id, state.skills[id]);
             const equipped = Boolean(bot.skills && bot.skills[id]);
             const charges = P.botSkillCharges(id, state.skills[id]);
             const cls = ["bot-skill-chip", equipped ? "is-equipped" : "", !unlocked ? "is-locked" : ""].filter(Boolean).join(" ");
@@ -272,7 +272,7 @@
               <div><span>${maxed ? "Estado" : "Al mejorar"}</span><strong>${maxed ? "Nivel máximo" : def.next(level)}</strong></div></div>
             <div class="store-card-action">${maxed ? '<span class="store-complete">Completado</span>' : `
               <button class="primary-btn" type="button" data-hq-action="buy-upgrade" data-id="${id}" ${missing ? "disabled" : ""}>
-                Mejorar · ${P.formatCoins(cost)} monedas</button>
+                Mejorar / ${P.formatCoins(cost)} monedas</button>
               ${missing ? `<small>Te faltan ${P.formatCoins(missing)} monedas</small>` : ""}`}
             </div>
           </article>`;
@@ -305,10 +305,10 @@
             <p class="store-description">${descriptions[id]}</p>
             <div class="store-comparison"><div><span>En tu partida</span><strong>${def.manual(level)}</strong></div>
               <div><span>${maxed ? "Para bots" : "Al mejorar tu partida"}</span><strong>${maxed ? def.bot(level) : def.manual(level + 1)}</strong></div></div>
-            <p class="store-bot-effect">Bots: ${level === 0 ? "mejora para equipar" : def.bot(level)}</p>
+            <p class="store-bot-effect">Bots: ${P.skillUnlocked(id, level) ? def.bot(level) : "desbloquea para equipar"}</p>
             <div class="store-card-action">${maxed ? '<span class="store-complete">Nivel máximo</span>' : `
               <button class="primary-btn" type="button" data-hq-action="buy-skill" data-id="${id}" ${missing ? "disabled" : ""}>
-                Mejorar · ${P.formatCoins(cost)} monedas</button>
+                ${P.skillUnlocked(id, level) ? "Mejorar" : "Desbloquear"} / ${P.formatCoins(cost)} monedas</button>
               ${missing ? `<small>Te faltan ${P.formatCoins(missing)} monedas</small>` : ""}`}
             </div>
           </article>`;
@@ -421,7 +421,15 @@
       }
       this.sound.play("coin");
       const def = BP.Progression.SKILL_DEFS[id];
-      this.ui.toast(`${def.name}: nivel ${result.level}. Se aplica en la siguiente partida.`, "success", 3500);
+      if (this.ui.game) {
+        const game = this.ui.game;
+        const updated = game.createPowers()[id];
+        const current = game.powers[id];
+        updated.charges = Math.max(0, updated.maxCharges - current.used);
+        Object.assign(current, Object.fromEntries(Object.entries(updated).filter(([key]) => !["used", "active", "endsAt", "clicks", "targeting", "hammerMode", "castEndsAt", "frozen", "lastCenter"].includes(key))));
+        this.ui.updatePowers(game);
+      }
+      this.ui.toast(`${def.name}: nivel ${result.level}.`, "success", 2000);
       this.ui.refreshProgression();
       this.renderHqSkills();
       const next = this.hqSkillList.querySelector(`[data-hq-action="buy-skill"][data-id="${id}"]`);

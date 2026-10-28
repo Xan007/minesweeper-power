@@ -103,6 +103,19 @@
         });
       });
 
+      BP.Progression.SKILL_IDS.forEach((id) => {
+        const card = this.powerCards[id];
+        if (!card) return;
+        const button = document.createElement("button");
+        button.type = "button";
+        button.className = "power-buy-inline";
+        button.dataset.buyPower = id;
+        const row = document.createElement("div");
+        row.className = "power-purchase-row";
+        card.parentNode.insertBefore(row, card);
+        row.append(card, button);
+        button.addEventListener("click", () => this.ui.hq.handleBuySkill(id));
+      });
       this.bindBoardEvents();
       this.bindKeyboard();
     }
@@ -576,6 +589,18 @@
         const card = this.powerCards[id];
         if (!power || !card) return;
 
+        const level = this.store.progression.skills[id] || 0;
+        const unlocked = id === "hint" || BP.Progression.skillUnlocked(id, level);
+        card.classList.toggle("is-locked", !unlocked);
+        card.disabled = !unlocked;
+        const buy = document.querySelector(`[data-buy-power="${id}"]`);
+        if (buy) {
+          const cost = BP.Progression.skillCost(id, level);
+          buy.hidden = cost == null;
+          buy.disabled = cost == null || this.store.progression.coins < cost;
+          buy.textContent = `${unlocked ? "Mejorar" : "Desbloquear"} / ${BP.Progression.formatCoins(cost)}`;
+          buy.title = `${unlocked ? "Mejorar" : "Desbloquear"} ${BP.Progression.SKILL_DEFS[id].name}`;
+        }
         const frozenCount = id === "freeze" && power.frozen ? power.frozen.size : 0;
         const active = (id === "xray" && power.active) || (id === "immortal" && power.active) || (id === "freeze" && (power.targeting || power.hammerMode || frozenCount > 0));
 

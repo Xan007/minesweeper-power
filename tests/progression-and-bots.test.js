@@ -299,6 +299,7 @@ test("los bots comparten escaneos con otros y completan operaciones persistentes
   state.bots.push({ ...state.bots[0], id: "bot-2", number: 2, name: "Scout-02", skills: {} });
   const store = { progression: state, save() {}, addCoins(value) { state.coins += value; }, addProgressionLog() {} };
   const manager = new BP.BotManager({ store });
+  state.bots.forEach((bot) => { bot.difficulty = "intermediate"; });
   const first = state.bots[0];
   assert.equal(manager.recordNetworkWin(first), null);
   assert.equal(manager.takeSharedScan(first.id), null);

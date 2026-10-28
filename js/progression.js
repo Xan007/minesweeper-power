@@ -9,6 +9,9 @@
 
   const SCHEMA_VERSION = 2;
   const BOT_DIFFICULTIES = ["beginner", "intermediate", "expert"];
+  const DEFAULT_BOT_SKILLS = { xray: true, defuse: true, immortal: false, freeze: false };
+  const skillUnlocked = (id, level = 0) => Boolean(DEFAULT_BOT_SKILLS[id] || level > 0);
+  const networkDifficulty = (level) => level >= 3 ? "expert" : "intermediate";
   const SKILL_IDS = ["xray", "defuse", "immortal", "freeze"];
 
   const SKILL_DEFS = {
@@ -179,7 +182,7 @@
           wins: 0,
           losses: 0,
           coins: 0,
-          skills: { xray: false, defuse: false, immortal: false, freeze: false },
+          skills: { ...DEFAULT_BOT_SKILLS },
         },
       ],
       nextBotId: 2,
@@ -283,7 +286,7 @@
         usedIds.add(bot.id);
         // Una habilidad equipada sin nivel comprado queda desactivada.
         SKILL_IDS.forEach((id) => {
-          if (!base.skills[id]) bot.skills[id] = false;
+          if (!skillUnlocked(id, base.skills[id])) bot.skills[id] = false;
         });
         return true;
       });
@@ -304,7 +307,7 @@
         wins: 0,
         losses: 0,
         coins: 0,
-        skills: { xray: false, defuse: false, immortal: false, freeze: false },
+        skills: { ...DEFAULT_BOT_SKILLS },
       });
       base.nextBotId = 2;
     }
@@ -345,7 +348,7 @@
 
   function botSkillCharges(id, level) {
     const safeLevel = safeInt(level, 0, SKILL_DEFS[id] ? SKILL_DEFS[id].maxLevel : 0, 0);
-    if (safeLevel <= 0) return 0;
+    if (safeLevel <= 0) return DEFAULT_BOT_SKILLS[id] ? 1 : 0;
     if (id === "xray" || id === "defuse" || id === "immortal") return 1 + safeLevel;
     if (id === "freeze") return 1 + Math.floor(safeLevel / 2);
     return 0;
@@ -367,11 +370,11 @@
         charges: 3 + levels.defuse,
       },
       immortal: {
-        charges: 2 + Math.floor(levels.immortal / 2),
+        charges: levels.immortal > 0 ? 2 + Math.floor(levels.immortal / 2) : 0,
         clicks: 6 + levels.immortal * 2,
       },
       freeze: {
-        charges: 3 + Math.floor(levels.freeze / 2),
+        charges: levels.freeze > 0 ? 3 + Math.floor(levels.freeze / 2) : 0,
         areaSize: levels.freeze >= 3 ? 3 : levels.freeze >= 1 ? 2 : 1,
         dragEnabled: levels.freeze >= 1,
         maxFrozen: 27,
@@ -529,6 +532,9 @@
   BP.Progression = {
     SCHEMA_VERSION,
     BOT_DIFFICULTIES,
+    DEFAULT_BOT_SKILLS,
+    skillUnlocked,
+    networkDifficulty,
     SKILL_IDS,
     SKILL_DEFS,
     UPGRADE_DEFS,

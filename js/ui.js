@@ -221,6 +221,7 @@
       const concurrency = P.concurrency(state);
       const maxBots = P.maxBots(state);
 
+      if (this.game) this.updatePowers(this.game);
       const formattedCoins = P.formatCoins(state.coins);
       if (this.coinCount) this.coinCount.textContent = formattedCoins;
 
