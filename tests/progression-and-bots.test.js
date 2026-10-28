@@ -648,3 +648,19 @@ test("la tienda compara habilidades reales del nivel inicial con su mejora", () 
   assert.match(hq.hqSkillList.innerHTML, /3 cargas \u00b7 2x2 \u00b7 3 s \u00b7 arrastre/);
   assert.match(hq.hqSkillList.innerHTML, /Te faltan 45 monedas/);
 });
+
+test("la vision X con mouse inspecciona sin abrir una casilla", () => {
+  const handlers = {};
+  const view = Object.create(BP.BoardViewComponent.prototype);
+  const cell = { dataset: { x: "2", y: "3" } };
+  let scans = 0, reveals = 0;
+  const game = { status: "playing", powers: { freeze: { targeting: false, hammerMode: false } }, reveal() { reveals += 1; } };
+  const boardEl = { addEventListener: (name, fn) => { handlers[name] = fn; }, setPointerCapture() {}, hasPointerCapture: () => true, releasePointerCapture() {} };
+  Object.assign(view, { ui: { game }, boardEl, xrayActive: true, powerPointerId: null, setFace() {}, cancelTouchTimer() {}, clearChordPreview() {}, handleXrayPointerMove() { scans += 1; } });
+  view.bindBoardEvents();
+  const event = { target: { closest: () => cell }, pointerType: "mouse", pointerId: 1, button: 0, clientX: 10, clientY: 10 };
+  handlers.pointerdown(event);
+  handlers.pointerup(event);
+  assert.equal(scans, 1);
+  assert.equal(reveals, 0);
+});

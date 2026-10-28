@@ -418,9 +418,6 @@
       this.ui.updatePowers(this);
       this.ui.updateHud(this);
       this.ui.flashPowerCard("xray");
-      if (this.fx && this.fx.radarWave) {
-        this.fx.radarWave(this.ui.boardEl || this.ui.boardWrap);
-      }
       this.sound.play("radarWave");
       this.sound.play("xrayStart");
       this.ui.toast(`Visión X activa · ${power.duration / 1000} segundos de escaneo.`, "info");

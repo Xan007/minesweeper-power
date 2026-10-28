@@ -79,3 +79,14 @@ body { font-size: 13px; color: var(--ui-ink); }
 
 .power-desc { position: static; width: auto; height: auto; overflow: visible; clip-path: none; white-space: normal; color: #38414a; font-size: 11px; }
 .skill-icon { color: #000080; }
+
+/* Una sola placa de radiografia: la zona es legible y no tapa el cursor. */
+.board { position: relative; }
+.board-frame.is-xray { outline: none; border-color: var(--shadow) var(--white) var(--white) var(--shadow); }
+.board-frame.is-xray .board-viewport, body.is-xray .board { cursor: crosshair; }
+#board .cell.is-peek { outline: none !important; animation: none; box-shadow: none !important; }
+#board .cell .peek { background: linear-gradient(145deg, #f4fafb, #d8ebee); box-shadow: inset 0 0 0 1px #abc5ca; color: #17394b; text-shadow: none; animation: none; font-size: calc(var(--cell) * 0.56); }
+#board .cell .peek[data-kind="mine"] { color: #172f39; background: linear-gradient(145deg, #e5f1f2, #bad7da); box-shadow: inset 0 0 0 1px #92b8bf; }
+#board .cell .peek[data-kind="mine"] .icon { width: 55%; height: 55%; }
+#board .cell .peek[data-kind="empty"] { color: transparent; }
+.xray-lens { position: absolute; z-index: 6; pointer-events: none; border: 2px solid #165d79; box-shadow: inset 0 0 0 1px rgba(255,255,255,.85), 0 0 0 1px rgba(255,255,255,.7); }

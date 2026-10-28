@@ -151,7 +151,7 @@
           this.game.freezeCell(x, y);
           return;
         }
-        if (event.pointerType === "touch" && this.xrayActive) {
+        if (event.button === 0 && this.xrayActive) {
           this.powerPointerId = event.pointerId;
           if (this.boardEl.setPointerCapture) this.boardEl.setPointerCapture(event.pointerId);
           return;
@@ -183,7 +183,7 @@
         this.cancelTouchTimer();
         this.clearChordPreview();
         if (this.powerPointerId != null && event.pointerId === this.powerPointerId) {
-          if (this.xrayActive && event.pointerType === "touch") this.handleXrayPointerMove(event);
+          if (this.xrayActive) this.handleXrayPointerMove(event);
           this.powerPointerId = null;
           if (this.boardEl.releasePointerCapture && this.boardEl.hasPointerCapture(event.pointerId)) this.boardEl.releasePointerCapture(event.pointerId);
           return;
@@ -776,14 +776,14 @@
       this.xrayCursor.style.left = `${event.clientX}px`;
       this.xrayCursor.style.top = `${event.clientY}px`;
 
-      const hit = hitCell || (event.pointerType === "touch" && document.elementFromPoint ? document.elementFromPoint(event.clientX, event.clientY) : event.target);
+      const hit = hitCell || (this.powerPointerId != null && document.elementFromPoint ? document.elementFromPoint(event.clientX, event.clientY) : event.target);
       const cellEl = hit && hit.closest(".cell");
       if (!cellEl || !this.game || !this.game.board) {
         this.clearPeek();
         return;
       }
       const cell = this.game.board.getCell(Number(cellEl.dataset.x), Number(cellEl.dataset.y));
-      if (!cell || cell.revealed) {
+      if (!cell) {
         this.clearPeek();
         return;
       }
@@ -797,6 +797,20 @@
       this.peekKey = key;
       this.peekElements = [];
       const radius = this.game.powers.xray.radius;
+      const board = this.game.board;
+      const start = this.getCellElement(Math.max(0, cell.x - radius), Math.max(0, cell.y - radius));
+      const end = this.getCellElement(Math.min(board.width - 1, cell.x + radius), Math.min(board.height - 1, cell.y + radius));
+      if (start && end) {
+        const lens = document.createElement("span");
+        lens.className = "xray-lens";
+        lens.setAttribute("aria-hidden", "true");
+        lens.style.left = `${start.offsetLeft}px`;
+        lens.style.top = `${start.offsetTop}px`;
+        lens.style.width = `${end.offsetLeft + end.offsetWidth - start.offsetLeft}px`;
+        lens.style.height = `${end.offsetTop + end.offsetHeight - start.offsetTop}px`;
+        this.boardEl.appendChild(lens);
+        this.peekLens = lens;
+      }
       for (let dy = -radius; dy <= radius; dy += 1) for (let dx = -radius; dx <= radius; dx += 1) {
         const nearby = this.game.board.getCell(cell.x + dx, cell.y + dy);
         if (!nearby || nearby.revealed) continue;
@@ -810,10 +824,10 @@
         } else if (nearby.adjacent > 0) {
           peek.dataset.kind = "number";
           peek.textContent = String(nearby.adjacent);
-
+          peek.style.color = NUMBER_COLORS[nearby.adjacent] || "";
         } else {
           peek.dataset.kind = "empty";
-          peek.textContent = "·";
+          peek.textContent = "";
         }
         el.appendChild(peek);
         el.classList.add("is-peek");
@@ -830,6 +844,8 @@
     }
 
     clearPeek() {
+      if (this.peekLens) this.peekLens.remove();
+      this.peekLens = null;
       (this.peekElements || []).forEach((el) => {
         el.classList.remove("is-peek");
         const peek = el.querySelector(".peek");
