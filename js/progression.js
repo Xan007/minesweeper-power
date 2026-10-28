@@ -103,9 +103,9 @@
       maxLevel: 6,
       baseCost: 35,
       growth: 1.65,
-      description: "Mejora la precisión. Los bots torpes fallan más.",
-      effect: (level) => `${Math.round(botAccuracy({ upgrades: { intelligence: level } }) * 100)}% de precisión`,
-      next: (level) => `${Math.round(botAccuracy({ upgrades: { intelligence: level + 1 } }) * 100)}% de precisión`,
+      description: "Aumenta la probabilidad de elegir la casilla de menor riesgo.",
+      effect: (level) => `${Math.round(botAccuracy({ upgrades: { intelligence: level } }) * 100)}% de análisis`,
+      next: (level) => `${Math.round(botAccuracy({ upgrades: { intelligence: level + 1 } }) * 100)}% de análisis`,
     },
   };
 
@@ -335,11 +335,23 @@
     return Math.max(12, Math.round(width * height / 8 + mines * 0.75));
   }
 
-  function manualReward(mode, config, elapsedMs) {
+  function flagBonus(base, mines, flags, defused = 0) {
+    const remaining = Math.max(0, Number(mines) - Number(defused || 0));
+    const unflagged = Math.max(0, remaining - Math.max(0, Number(flags) || 0));
+    return { unflagged, flagBonus: remaining ? Math.round(base * 0.4 * unflagged / remaining) : 0 };
+  }
+
+  function manualRewardDetails(mode, config, elapsedMs, flags = 0, defused = 0) {
     const base = manualBaseReward(mode, config);
     const seconds = Math.max(0, Number(elapsedMs) || 0) / 1000;
     const speedFactor = Math.max(0, 1 - seconds / 240);
-    return base + Math.round(base * 0.6 * speedFactor);
+    const speedBonus = Math.round(base * 0.6 * speedFactor);
+    const flagInfo = flagBonus(base, Number(config && config.mines) || 10, flags, defused);
+    return { base, speedBonus, ...flagInfo, total: base + speedBonus + flagInfo.flagBonus };
+  }
+
+  function manualReward(mode, config, elapsedMs, flags = 0, defused = 0) {
+    return manualRewardDetails(mode, config, elapsedMs, flags, defused).total;
   }
 
   function manualLossReward(mode, config, revealedCount, totalSafeCount) {
@@ -352,7 +364,7 @@
     return Math.max(1, Math.round(maxLoss * (0.25 + 0.75 * progressRatio)));
   }
 
-  function botBoardReward({ difficulty, win, elapsedMs, revealedSafe, totalSafe, mistakes = 0 }) {
+  function botBoardReward({ difficulty, win, elapsedMs, revealedSafe, totalSafe, mistakes = 0, mines = 0, flags = 0, defused = 0 }) {
     let baseWin;
     let parTimeSec;
     if (difficulty === "expert") {
@@ -383,7 +395,8 @@
       // 4. Bonus de deducción limpia si no activó escudos ni cometió errores
       const cleanBonus = mistakes === 0 ? Math.max(2, Math.round(baseWin * 0.2)) : 0;
 
-      const total = baseWin + speedBonus + cellsBonus + cleanBonus;
+      const flagInfo = flagBonus(baseWin, mines, flags, defused);
+      const total = baseWin + speedBonus + cellsBonus + cleanBonus + flagInfo.flagBonus;
       return {
         total,
         breakdown: {
@@ -391,6 +404,7 @@
           speedBonus,
           cellsBonus,
           cleanBonus,
+          ...flagInfo,
           elapsedSec,
           revealedSafe: safeRevealed,
           totalSafe: safeTotal,
@@ -457,6 +471,7 @@
     botSkillCharges,
     manualPowerStats,
     manualReward,
+    manualRewardDetails,
     manualLossReward,
     botReward,
     botBoardReward,

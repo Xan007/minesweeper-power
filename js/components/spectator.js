@@ -711,7 +711,7 @@
       if (this.specAccuracyVal) this.specAccuracyVal.textContent = `${accPct}%`;
       if (this.specAccuracySub) {
         const lvl = state.upgrades.intelligence || 0;
-        this.specAccuracySub.textContent = lvl === 0 ? "Baja · conjeturas frecuentes" : `Nivel ${lvl} · precisión alta`;
+        this.specAccuracySub.textContent = `Nivel ${lvl} · elección de menor riesgo`;
       }
       const baseStepMs = P.botStepMs(state);
       const speedMult = this.bots ? this.bots.speedMultiplier : 1;

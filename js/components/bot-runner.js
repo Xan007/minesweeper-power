@@ -28,6 +28,7 @@
       this.lastStepAt = 0;
       this.startedAt = 0;
       this.finishedAt = 0;
+      this.pausedAt = 0;
       this.steps = 0;
       this.accuracy = 0;
       this.charges = {};
@@ -79,6 +80,7 @@
       this.lastStepAt = 0;
       this.startedAt = performance.now();
       this.finishedAt = 0;
+      this.pausedAt = 0;
       this.steps = 0;
       this.accuracy = BP.Progression.botAccuracy(state);
       this.used = { xray: 0, defuse: 0, immortal: 0, freeze: 0, mistakes: 0 };
@@ -99,12 +101,17 @@
 
     pause() {
       if (this.done) return;
-      if (this.status !== "waiting") this.status = "waiting";
+      if (this.status !== "waiting") {
+        this.status = "waiting";
+        this.pausedAt = performance.now();
+      }
     }
 
     resume() {
       if (this.done) return;
       if (this.status === "waiting") {
+        this.startedAt += performance.now() - this.pausedAt;
+        this.pausedAt = 0;
         this.status = "solving";
         this.lastStepAt = performance.now();
       }
@@ -154,7 +161,7 @@
       const analysis = this.analyze();
 
       // Primero marca las minas que puede deducir con certeza (paso a paso para visibilidad en tiempo real).
-      if (analysis.mines.length > 0) {
+      if (analysis.safe.length === 0 && analysis.mines.length > 0) {
         const toMark = analysis.mines.filter((cell) => !cell.revealed && !cell.flagged);
         if (toMark.length > 0) {
           const targetMine = toMark[0];
@@ -174,26 +181,13 @@
       let target = null;
 
       if (analysis.safe.length > 0) {
-        // La precisión modela la inteligencia:
-        // si falla el chequeo de inteligencia, pasa por alto la deducción segura y duda/adivina.
-        if (Math.random() < this.accuracy) {
-          target = pickRandom(analysis.safe);
-          this.status = "solving";
-          this.setThought(
-            `Certeza 100%: celda segura en (${target.x + 1}, ${target.y + 1}) por suma de vecinos.`,
-            "safe",
-            target
-          );
-        } else {
-          target = pickRandom(hidden);
-          this.status = "guessing";
-          const accPct = Math.round(this.accuracy * 100);
-          this.setThought(
-            `Fallo de cálculo (Inteligencia ${accPct}%): dudó de la lógica y eligió (${target.x + 1}, ${target.y + 1}) al azar.`,
-            "mistake",
-            target
-          );
-        }
+        target = pickRandom(analysis.safe);
+        this.status = "solving";
+        this.setThought(
+          `Deducción segura en (${target.x + 1}, ${target.y + 1}).`,
+          "safe",
+          target
+        );
       } else {
         // Sin jugadas deterministas, usa habilidades equipadas o arriesga.
         if (this.charges.freeze > 0) {
@@ -238,12 +232,12 @@
           }
         }
 
-        const safeHidden = hidden.filter((cell) => !cell.mine);
-        if (Math.random() < this.accuracy && safeHidden.length > 0) {
-          target = pickRandom(safeHidden);
+        if (Math.random() < this.accuracy && analysis.risks.length > 0) {
+          const lowestRisk = Math.min(...analysis.risks.map((item) => item.risk));
+          target = pickRandom(analysis.risks.filter((item) => item.risk === lowestRisk)).cell;
           this.status = "intuition";
           this.setThought(
-            `Cálculo probabilístico: intuición acertada en (${target.x + 1}, ${target.y + 1}).`,
+            `Menor riesgo estimado: ${Math.round(lowestRisk * 100)}% en (${target.x + 1}, ${target.y + 1}).`,
             "intuition",
             target
           );
@@ -252,7 +246,7 @@
           this.status = "guessing";
           const accPct = Math.round(this.accuracy * 100);
           this.setThought(
-            `Sin datos certeros: arriesgando a ciegas en (${target.x + 1}, ${target.y + 1}) (Precisión: ${accPct}%).`,
+            `Sin datos certeros: arriesgando en (${target.x + 1}, ${target.y + 1}) (Análisis: ${accPct}%).`,
             "guess",
             target
           );
@@ -266,12 +260,6 @@
 
       if (target.flagged) {
         this.lastStepAt = 0;
-        return;
-      }
-
-      if (target.mine) {
-        this.targetCell = target;
-        this.handleMine(target, now);
         return;
       }
 
@@ -297,37 +285,7 @@
     }
 
     analyze() {
-      const safeMap = new Map();
-      const mineMap = new Map();
-
-      this.board.forEach((cell) => {
-        if (!cell.revealed || cell.mine || cell.adjacent <= 0) return;
-        let flags = 0;
-        let defused = 0;
-        const hidden = [];
-
-        this.board.neighbors(cell.x, cell.y).forEach((neighbor) => {
-          if (neighbor.flagged) flags += 1;
-          else if (neighbor.mine && neighbor.defused) defused += 1;
-          else if (!neighbor.revealed) hidden.push(neighbor);
-        });
-
-        if (hidden.length === 0) return;
-        if (flags + defused === cell.adjacent) {
-          hidden.forEach((neighbor) => {
-            safeMap.set(`${neighbor.x},${neighbor.y}`, neighbor);
-          });
-        } else if (flags + defused + hidden.length === cell.adjacent) {
-          hidden.forEach((neighbor) => {
-            mineMap.set(`${neighbor.x},${neighbor.y}`, neighbor);
-          });
-        }
-      });
-
-      return {
-        safe: Array.from(safeMap.values()),
-        mines: Array.from(mineMap.values()),
-      };
+      return BP.BotBrain.analyze(this.board);
     }
 
     pickFreezeCenter(hidden) {
@@ -340,10 +298,8 @@
             const neighbor = this.board.getCell(cell.x + dx, cell.y + dy);
             if (!neighbor) continue;
             if (!neighbor.revealed) score += 1;
-            if (neighbor.mine && !neighbor.defused) score += 0.5;
           }
         }
-        if (cell.mine && !cell.defused) score += 0.5;
         if (score > bestScore) {
           bestScore = score;
           best = cell;
@@ -415,9 +371,9 @@
       this.progress = 1;
       this.finishedAt = now;
       this.targetCell = null;
-      if (this.board) {
-        this.board.flagAllMines();
-      }
+      const flags = this.board.flagsPlaced;
+      const defused = this.board.minesDefused;
+      if (this.board) this.board.flagAllMines();
       const speedMult = this.manager.speedMultiplier || 1;
       this.nextStartAt = now + Math.max(250, Math.round(1400 / speedMult));
 
@@ -431,6 +387,9 @@
         revealedSafe,
         totalSafe: safeCount,
         mistakes: this.used.mistakes || 0,
+        mines: this.board.mineCount,
+        flags,
+        defused,
       });
 
       this.lastReward = rewardInfo;
@@ -439,6 +398,7 @@
       if (rewardInfo.breakdown.speedBonus > 0) {
         details += ` (Velocidad: +${rewardInfo.breakdown.speedBonus})`;
       }
+      details += ` · Sin bandera: +${rewardInfo.breakdown.flagBonus}`;
       this.setThought(details, "win");
       this.manager.completeBoard(this, true, rewardInfo.total, rewardInfo);
     }

@@ -27,7 +27,7 @@
       this.recordsSummary = $("#recordsSummary");
       this.bestGrid = $("#bestGrid");
       this.historyList = $("#historyList");
-      this.resetRecordsBtn = $("#resetRecordsBtn");
+      this.resetRecordsBtn = $("#resetStatsBtn");
 
       this.resultModal = $("#resultModal");
       this.resultCard = this.resultModal ? this.resultModal.querySelector(".modal-card") : null;
@@ -41,6 +41,11 @@
       this.resultCoinsRow = $("#resultCoinsRow");
       this.resultCoinsReason = $("#resultCoinsReason");
       this.resultAgainBtn = $("#resultAgainBtn");
+      this.resultChangeBtn = $("#resultChangeBtn");
+      this.resultDetails = $("#resultDetails");
+      this.resultKicker = $("#resultKicker");
+      this.newRecordBadge = $("#newRecordBadge");
+      this.resultEmblemIcon = $("#resultEmblemIcon use");
 
       this.bindEvents();
     }
@@ -63,6 +68,7 @@
           this.ui.startSameGame();
         });
       }
+      if (this.resultChangeBtn) this.resultChangeBtn.addEventListener("click", () => this.closeModal(this.resultModal));
 
       document.addEventListener("keydown", (event) => {
         if (event.key === "Escape" && this.activeModal) {
@@ -244,7 +250,7 @@
 
     showResult(data) {
       if (!this.resultModal) return;
-      const isWin = Boolean(data.win);
+      const isWin = data.result === "win";
 
       if (this.resultCard) {
         this.resultCard.classList.toggle("modal-card--win", isWin);
@@ -262,7 +268,7 @@
 
       if (this.resultSub) {
         this.resultSub.textContent = isWin
-          ? "Todas las minas identificadas sin bajas."
+          ? "Todas las celdas seguras descubiertas."
           : (data.reason === "giveup" ? "Misión reiniciada por el usuario." : "Una mina se activó bajo tus pies.");
       }
 
@@ -271,6 +277,17 @@
       }
 
       if (this.resultTime) this.resultTime.textContent = U.formatPrecise(data.timeMs);
+      if (this.resultKicker) this.resultKicker.textContent = isWin ? "MISIÓN COMPLETADA" : "MISIÓN FALLIDA";
+      if (this.resultEmblemIcon) this.resultEmblemIcon.setAttribute("href", isWin ? "#i-trophy" : "#i-bomb");
+      if (this.newRecordBadge) this.newRecordBadge.hidden = !data.isRecord;
+      if (this.resultDetails) {
+        const details = data.rewardDetails;
+        this.resultDetails.innerHTML = `
+          <div class="result-detail result-detail--coins"><strong>+${BP.Progression.formatCoins(data.reward)}</strong><span>Monedas</span></div>
+          ${details ? `<div class="result-detail"><strong>+${details.speedBonus}</strong><span>Velocidad</span></div>
+          <div class="result-detail"><strong>+${details.flagBonus}</strong><span>${details.unflagged} sin bandera</span></div>` : ""}
+        `;
+      }
       if (this.resultActions) this.resultActions.textContent = `${data.actions || 0} acciones`;
 
       const coins = Number(data.coins) || 0;

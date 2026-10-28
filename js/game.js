@@ -36,6 +36,7 @@
       this.lastRecord = null;
       this.lastResult = null;
       this.lastReward = 0;
+      this.rewardDetails = null;
       this.lastActionAt = 0;
     }
 
@@ -109,6 +110,7 @@
       this.lastRecord = null;
       this.lastResult = null;
       this.lastReward = 0;
+      this.rewardDetails = null;
       this.elapsedMs = 0;
       this.startTs = 0;
 
@@ -895,6 +897,9 @@
       this.cancelFreeze(false);
       this.clearFrozenCells(false);
       this.endShield(false);
+      this.rewardDetails = BP.Progression.manualRewardDetails(
+        this.mode, this.config, this.elapsedMs, this.board.flagsPlaced, this.board.minesDefused
+      );
       this.board.flagAllMines();
       this.ui.updateAllCells();
       this.ui.setFace("win");
@@ -904,7 +909,7 @@
       this.sound.play("win");
       this.fx.win();
 
-      const reward = BP.Progression.manualReward(this.mode, this.config, this.elapsedMs);
+      const reward = this.rewardDetails.total;
       this.lastReward = reward;
       this.store.progression.manualWins += 1;
       this.store.addCoins(reward);
@@ -1022,6 +1027,7 @@
         usedPowers,
         totalPowers: 6,
         reward: this.lastReward,
+        rewardDetails: this.rewardDetails,
         coins: this.store.progression.coins,
       };
     }
