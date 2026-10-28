@@ -10,6 +10,7 @@ require("../js/components/bot-brain.js");
 require("../js/components/bot-runner.js");
 require("../js/bots.js");
 require("../js/components/contracts.js");
+require("../js/components/extractor.js");
 require("../js/components/board-view.js");
 require("../js/components/spectator.js");
 require("../js/game.js");
@@ -236,4 +237,62 @@ test("la sacudida mueve todos los elementos y termina en reposo", () => {
     assert.ok(elements.every((element) => element.style.transform === ""));
     assert.equal(fx.running, false);
   } finally { global.requestAnimationFrame = original; }
+});
+
+test("la extracción activa da monedas, forma combos y activa una descarga cada 25 clics", () => {
+  const state = BP.Progression.createState();
+  const store = { progression: state, addCoins(value) { state.coins += value; }, save() {},
+    spendCoins(value) { if (state.coins < value) return false; state.coins -= value; return true; } };
+  let boosts = 0;
+  const component = Object.create(BP.ExtractorComponent.prototype);
+  Object.assign(component, { store, comboClicks: 0, lastClickAt: null, lastEffectAt: 0, button: {},
+    sound: { play() {} }, fx: { floatingText() {}, coinBurst() {}, energyArcs() {}, shakeMedium() {} },
+    ui: { bots: { activeCount: () => 1, activateExtractionBoost() { boosts += 1; } }, refreshProgression() {}, toast() {} } });
+  const first = component.extract(10000);
+  assert.equal(first.clickReward, 2);
+  let result;
+  for (let i = 1; i < 25; i += 1) result = component.extract(10000 + i * 100);
+  assert.equal(result.combo, 5);
+  assert.equal(result.clickReward, 10);
+  assert.equal(result.burstReward, 22);
+  assert.equal(boosts, 1);
+  assert.equal(state.extractor.charge, 0);
+  assert.equal(component.extract(20000).combo, 1);
+  assert.equal(component.buyUpgrade(), true);
+  assert.equal(state.extractor.level, 1);
+  assert.equal(BP.Progression.extractorPower(1), 4);
+  const restored = BP.Progression.sanitizeState(state);
+  assert.equal(restored.extractor.level, 1);
+  assert.equal(restored.extractor.charge, 1);
+  assert.equal(restored.extractor.clicks, 26);
+});
+
+test("mejorar el extractor exige monedas y multiplica la potencia cada diez niveles", () => {
+  const p = BP.Progression;
+  assert.ok(p.extractorPower(10) > p.extractorPower(9) * 2);
+  assert.ok(p.extractorCost(50) > p.extractorCost(49));
+  assert.equal(p.extractorCost(100), null);
+  const state = p.createState();
+  const component = Object.create(BP.ExtractorComponent.prototype);
+  component.store = { progression: state, spendCoins: () => false };
+  assert.equal(component.buyUpgrade(), false);
+  assert.equal(state.extractor.level, 0);
+  state.coins = 5000000000;
+  state.totalEarned = 5000000000;
+  assert.equal(p.sanitizeState(state).coins, 5000000000);
+});
+
+test("la descarga acelera a los bots por ocho segundos y se combina con turbo", () => {
+  const original = global.performance;
+  let now = 1000;
+  try {
+    global.performance = { now: () => now };
+    const manager = new BP.BotManager({ store: { progression: BP.Progression.createState() } });
+    manager.activateExtractionBoost();
+    assert.equal(manager.speedMultiplier, 1.5);
+    manager.turboUntil = 5000;
+    assert.equal(manager.speedMultiplier, 6.75);
+    now = 9001;
+    assert.equal(manager.speedMultiplier, 1);
+  } finally { global.performance = original; }
 });

@@ -26,6 +26,7 @@
       this.hq = new BP.HqComponent({ ui: this, store, sound, fx });
       this.spectator = new BP.SpectatorComponent({ ui: this, store, sound, fx });
       this.contracts = new BP.ContractsView(store);
+      this.extractor = new BP.ExtractorComponent({ ui: this, store, sound, fx });
 
       // Elementos globales de navegación y barra lateral
       this.viewTabPlay = $("#viewTabPlay");
@@ -212,6 +213,7 @@
       const state = this.store.progression;
       const P = BP.Progression;
       this.contracts.render();
+      this.extractor.render();
       const activeCount = this.bots ? this.bots.activeCount() : 0;
       const concurrency = P.concurrency(state);
       const maxBots = P.maxBots(state);

@@ -8,7 +8,7 @@
   <title>Buscaminas Power · Edición clásica</title>
   <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
   <link rel="stylesheet" href="css/base.css?v=classic-4">
-  <link rel="stylesheet" href="css/layout.css?v=classic-8">
+  <link rel="stylesheet" href="css/layout.css?v=classic-9">
   <link rel="stylesheet" href="css/board.css?v=classic-4">
   <link rel="stylesheet" href="css/powers.css?v=classic-5">
   <link rel="stylesheet" href="css/progression.css?v=classic-8">
@@ -390,6 +390,19 @@
               <div class="hud-record" id="bestChip">SIN RÉCORD</div>
             </div>
 
+            <section class="extractor" aria-label="Extracción activa">
+              <div class="extractor-copy">
+                <strong>EXTRACCIÓN ACTIVA</strong>
+                <span id="extractInfo">Nivel 0 · combo ×1</span>
+                <span class="extractor-hint">25 clics: descarga y bots más rápidos por 8 s</span>
+              </div>
+              <button class="primary-btn extractor-button" id="extractBtn" type="button">Extraer +2</button>
+              <button class="ghost-btn extractor-upgrade" id="extractUpgrade" type="button">Mejorar · 40</button>
+              <div class="extractor-charge" aria-label="Carga de descarga">
+                <span>DESCARGA <b id="extractCharge">0/25</b></span>
+                <div class="extractor-track"><i id="extractBar"></i></div>
+              </div>
+            </section>
             <div class="board-frame" id="boardFrame">
               <div class="board-viewport" id="boardViewport">
                 <div class="board" id="board" role="grid" aria-label="Tablero de buscaminas"></div>
@@ -941,22 +954,23 @@
 
   <script src="js/utils.js?v=classic-4" defer></script>
   <script src="js/config.js?v=classic-4" defer></script>
-  <script src="js/progression.js?v=classic-8" defer></script>
+  <script src="js/progression.js?v=classic-9" defer></script>
   <script src="js/components/contracts.js?v=classic-8" defer></script>
-  <script src="js/storage.js?v=classic-4" defer></script>
+  <script src="js/components/extractor.js?v=classic-9" defer></script>
+  <script src="js/storage.js?v=classic-9" defer></script>
   <script src="js/audio.js?v=classic-4" defer></script>
   <script src="js/effects.js?v=classic-8" defer></script>
   <script src="js/board.js?v=classic-4" defer></script>
   <script src="js/defuse.js?v=classic-4" defer></script>
   <script src="js/components/bot-brain.js?v=classic-6" defer></script>
   <script src="js/components/bot-runner.js?v=classic-8" defer></script>
-  <script src="js/bots.js?v=classic-8" defer></script>
+  <script src="js/bots.js?v=classic-9" defer></script>
   <script src="js/game.js?v=classic-8" defer></script>
   <script src="js/components/modals.js?v=classic-8" defer></script>
   <script src="js/components/board-view.js?v=classic-7" defer></script>
   <script src="js/components/hq.js?v=classic-5" defer></script>
   <script src="js/components/spectator.js?v=classic-8" defer></script>
-  <script src="js/ui.js?v=classic-8" defer></script>
+  <script src="js/ui.js?v=classic-9" defer></script>
   <script src="js/app.js?v=classic-4" defer></script>
 </body>
 </html>

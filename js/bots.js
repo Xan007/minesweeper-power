@@ -17,6 +17,7 @@
       this.onUpdate = null;
       this.onNetworkReward = null;
       this.turboUntil = 0;
+      this.extractionBoostUntil = 0;
       // Recarga automática: timestamp (performance.now) en el que se concede una carga gratis
       this.turboFreeRechargeAt = performance.now() + TURBO_FREE_RECHARGE_SECS * 1000;
       this._lastTurboWasActive = false;
@@ -31,7 +32,12 @@
     }
 
     get speedMultiplier() {
-      return this.isTurboActive ? (BP.Progression.TURBO_SPEED_MULT || 4.5) : 1;
+      const turbo = this.isTurboActive ? (BP.Progression.TURBO_SPEED_MULT || 4.5) : 1;
+      return turbo * (performance.now() < this.extractionBoostUntil ? 1.5 : 1);
+    }
+
+    activateExtractionBoost() {
+      this.extractionBoostUntil = performance.now() + 8000;
     }
 
     get turboFreeRechargeRemainingMs() {

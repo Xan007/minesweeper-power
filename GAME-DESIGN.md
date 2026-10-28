@@ -2,6 +2,8 @@
 
 La partida manual debe ser interesante por sí misma: leer pistas, decidir si arriesgar, usar poderes en momentos tensos y recibir una recompensa clara. Los bots acompañan esa partida y generan recursos mientras la página está abierta.
 
+La estación de extracción permite obtener monedas continuamente con clics. Los clics seguidos elevan el combo hasta ×5; cada 25 clics se cobra una descarga y los bots activos reciben 1,5× de velocidad durante ocho segundos. La potencia se puede mejorar hasta el nivel 100 y se duplica cada diez niveles. La carga y las mejoras se guardan; el combo y el impulso temporal se reinician al recargar.
+
 ## Recorrido actual
 
 1. **Primeros minutos:** el primer clic es seguro; el jugador conoce el tablero, las banderas y los cuatro poderes. Un bot y monedas iniciales permiten probar las primeras mejoras.

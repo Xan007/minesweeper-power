@@ -135,6 +135,24 @@ details[open] > .contracts-head strong::before { content: "▾ "; }
 
 /* El tablero es la acción principal; el historial sigue disponible desde la barra de título. */
 .intel-panel { display: none; }
+
+/* Estación de clics: una acción principal y una inversión visible. */
+.extractor { display: grid; grid-template-columns: minmax(150px, 1fr) auto auto minmax(95px, 140px); align-items: center; gap: 8px; padding: 7px; margin: 0 0 7px; border: 2px solid; border-color: var(--white) var(--dark) var(--dark) var(--white); background: #d4d0c8; }
+.extractor-copy { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.extractor-copy strong { color: #000080; font-size: 11px; }
+.extractor-copy span { font-size: 11px; }
+.extractor-hint { color: #404040; }
+.extractor-button { min-height: 36px; min-width: 130px; font-weight: 700; }
+.extractor-upgrade { min-height: 36px; }
+.extractor-charge { display: flex; flex-direction: column; gap: 4px; font-size: 10px; font-weight: 700; }
+.extractor-charge span { display: flex; justify-content: space-between; gap: 8px; }
+.extractor-track { height: 12px; border: 2px solid; border-color: var(--dark) var(--white) var(--white) var(--dark); background: #fff; }
+.extractor-track i { display: block; width: 0; height: 100%; background: #000080; }
+@media (max-width: 760px) {
+  .extractor { grid-template-columns: 1fr 1fr; }
+  .extractor-copy, .extractor-charge { grid-column: 1 / -1; }
+  .extractor-button, .extractor-upgrade { min-height: 44px; min-width: 0; }
+}
 .core-panel > .panel-sub, .core-bot-hint { display: none; }
 .power-card { cursor: pointer; }
 .power-card:focus-visible { outline: 2px solid #000080; outline-offset: -4px; }

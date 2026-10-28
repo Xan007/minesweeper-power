@@ -159,6 +159,7 @@
       expertStreak: 0,
       bestExpertStreak: 0,
       network: { level: 1, progress: 0, assists: 0, scans: [] },
+      extractor: { level: 0, charge: 0, clicks: 0 },
       bots: [
         {
           id: "bot-1",
@@ -214,7 +215,7 @@
       wins: safeInt(raw.wins, 0, 9999999, 0),
       losses: safeInt(raw.losses, 0, 9999999, 0),
       boards: safeInt(raw.boards, 0, 9999999, 0),
-      coins: safeInt(raw.coins, 0, 999999999, 0),
+      coins: safeInt(raw.coins, 0, Number.MAX_SAFE_INTEGER, 0),
       createdAt: raw.createdAt || new Date().toISOString(),
     };
   }
@@ -222,9 +223,9 @@
   function sanitizeState(raw) {
     const base = createState();
     if (!raw || typeof raw !== "object") return base;
-    base.coins = safeInt(raw.coins, 0, 999999999, 0);
-    base.totalEarned = safeInt(raw.totalEarned, 0, 9999999999, 0);
-    base.totalSpent = safeInt(raw.totalSpent, 0, 9999999999, 0);
+    base.coins = safeInt(raw.coins, 0, Number.MAX_SAFE_INTEGER, 0);
+    base.totalEarned = safeInt(raw.totalEarned, 0, Number.MAX_SAFE_INTEGER, 0);
+    base.totalSpent = safeInt(raw.totalSpent, 0, Number.MAX_SAFE_INTEGER, 0);
     base.manualWins = safeInt(raw.manualWins, 0, 9999999, 0);
     base.botWins = safeInt(raw.botWins, 0, 9999999, 0);
     base.botLosses = safeInt(raw.botLosses, 0, 9999999, 0);
@@ -239,6 +240,11 @@
       base.network.assists = safeInt(raw.network.assists, 0, 9999999, 0);
       base.network.scans = Array.isArray(raw.network.scans)
         ? raw.network.scans.filter((id) => typeof id === "string").slice(0, 6) : [];
+    }
+    if (raw.extractor && typeof raw.extractor === "object") {
+      base.extractor.level = safeInt(raw.extractor.level, 0, 100, 0);
+      base.extractor.charge = safeInt(raw.extractor.charge, 0, 24, 0);
+      base.extractor.clicks = safeInt(raw.extractor.clicks, 0, 999999999, 0);
     }
     if (raw.contracts && typeof raw.contracts === "object") {
       base.contracts.date = /^\d{4}-\d{2}-\d{2}$/.test(raw.contracts.date) ? raw.contracts.date : "";
@@ -481,6 +487,16 @@
     return Math.min(1000000, 100 * safeInt(level, 1, 9999, 1));
   }
 
+  function extractorPower(level) {
+    const safeLevel = safeInt(level, 0, 100, 0);
+    return (2 + safeLevel * 2) * Math.pow(2, Math.floor(safeLevel / 10));
+  }
+
+  function extractorCost(level) {
+    const safeLevel = safeInt(level, 0, 100, 0);
+    return safeLevel >= 100 ? null : Math.round(40 * Math.pow(1.16, safeLevel));
+  }
+
   function expertStreakBonus(base, streak) {
     return Math.round(Math.max(0, Number(base) || 0) * Math.min(1.5, safeInt(streak, 0, 999999, 0) * 0.1));
   }
@@ -523,6 +539,8 @@
     botBoardReward,
     networkGoal,
     networkReward,
+    extractorPower,
+    extractorCost,
     expertStreakBonus,
     formatCoins,
     formatNumber,

@@ -111,8 +111,8 @@
     addCoins(amount) {
       const value = Math.max(0, Math.round(Number(amount) || 0));
       if (!value) return this.data.progression.coins;
-      this.data.progression.coins += value;
-      this.data.progression.totalEarned += value;
+      this.data.progression.coins = Math.min(Number.MAX_SAFE_INTEGER, this.data.progression.coins + value);
+      this.data.progression.totalEarned = Math.min(Number.MAX_SAFE_INTEGER, this.data.progression.totalEarned + value);
       this.save();
       return this.data.progression.coins;
     }
@@ -122,7 +122,7 @@
       if (value <= 0) return true;
       if (this.data.progression.coins < value) return false;
       this.data.progression.coins -= value;
-      this.data.progression.totalSpent += value;
+      this.data.progression.totalSpent = Math.min(Number.MAX_SAFE_INTEGER, this.data.progression.totalSpent + value);
       this.save();
       return true;
     }
