@@ -8,9 +8,9 @@
   <title>Buscaminas Power · Edición clásica</title>
   <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
   <link rel="stylesheet" href="css/base.css?v=classic-4">
-  <link rel="stylesheet" href="css/layout.css?v=mobile-11">
+  <link rel="stylesheet" href="css/layout.css?v=clean-12">
   <link rel="stylesheet" href="css/board.css?v=classic-10">
-  <link rel="stylesheet" href="css/powers.css?v=classic-10">
+  <link rel="stylesheet" href="css/powers.css?v=clean-12">
   <link rel="stylesheet" href="css/progression.css?v=mobile-11">
 </head>
 <body>
@@ -193,7 +193,7 @@
                   <span class="power-name">Visión X</span>
                   <kbd>1</kbd>
                 </span>
-                <span class="power-desc">Revela un área durante 6 s.</span>
+                <span class="power-desc">Inspecciona celdas durante 6 s.</span>
                 <span class="power-meta">
                   <span class="pips" data-pips="xray" aria-hidden="true"></span>
                   <span class="power-state" data-state="xray">2 usos</span>
@@ -250,8 +250,8 @@
           </div>
         </section>
 
-        <section class="panel core-panel">
-          <div class="panel-head">
+        <details class="panel core-panel">
+          <summary class="panel-head core-summary">
             <div>
               <p class="kicker">NÚCLEO</p>
               <h2>Cuartel</h2>
@@ -260,7 +260,7 @@
               <svg class="icon"><use href="#i-coin"></use></svg>
               <b id="coreCoinsValue">0</b>
             </span>
-          </div>
+          </summary>
           <p class="panel-sub">Gana monedas y pon bots a resolver tableros.</p>
           <div class="core-stats">
             <div class="core-stat">
@@ -291,7 +291,7 @@
             </button>
           </div>
           <div class="core-bot-hint" id="coreBotHint">Contrata bots para generar monedas en segundo plano.</div>
-        </section>
+        </details>
 
         <section class="panel intel-panel">
           <div class="panel-head">
@@ -330,7 +330,7 @@
           </button>
           <button class="view-tab" id="viewTabSpectator" type="button" role="tab" aria-selected="false" data-view="spectator">
             <svg class="icon"><use href="#i-bot"></use></svg>
-            <span>Sesiones de Bots (En vivo)</span>
+            <span>Bots en vivo</span>
             <span class="view-badge" id="viewActiveBotsBadge">0</span>
           </button>
         </div>
@@ -356,9 +356,12 @@
                 <svg class="icon"><use href="#i-refresh"></use></svg>
                 <span>Nueva partida</span>
               </button>
-              <button class="chip-btn" id="newSessionBtn" type="button" title="Reiniciar todo el progreso">
-                Nueva sesión
-              </button>
+              <details class="toolbar-options">
+                <summary>Opciones</summary>
+                <div class="toolbar-options-menu">
+                  <button class="chip-btn" id="newSessionBtn" type="button" title="Reiniciar todo el progreso">Nueva sesión</button>
+                </div>
+              </details>
             </div>
             <div class="touch-tools" role="group" aria-label="Acción táctil">
               <span>Al tocar:</span>
@@ -410,7 +413,7 @@
               <div class="extractor-copy">
                 <strong>EXTRACCIÓN ACTIVA</strong>
                 <span id="extractInfo">Nivel 0 · combo ×1</span>
-                <span class="extractor-hint">25 clics: descarga y bots más rápidos por 8 s</span>
+                <span class="extractor-hint">25 clics: descarga y bots más rápidos</span>
               </div>
               <button class="primary-btn extractor-button" id="extractBtn" type="button">Extraer +2</button>
               <button class="ghost-btn extractor-upgrade" id="extractUpgrade" type="button">Mejorar · 40</button>
@@ -974,10 +977,10 @@
   <script src="js/config.js?v=classic-10" defer></script>
   <script src="js/progression.js?v=classic-10" defer></script>
   <script src="js/components/contracts.js?v=classic-8" defer></script>
-  <script src="js/components/extractor.js?v=classic-9" defer></script>
+  <script src="js/components/extractor.js?v=clean-12" defer></script>
   <script src="js/storage.js?v=mobile-11" defer></script>
   <script src="js/audio.js?v=classic-4" defer></script>
-  <script src="js/effects.js?v=classic-8" defer></script>
+  <script src="js/effects.js?v=clean-12" defer></script>
   <script src="js/board.js?v=classic-4" defer></script>
   <script src="js/defuse.js?v=classic-4" defer></script>
   <script src="js/components/bot-brain.js?v=classic-6" defer></script>

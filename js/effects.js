@@ -72,10 +72,12 @@
       this.raf = null;
       this.trauma = 0;
       this.shakeTime = 0;
+      this.shaking = false;
       this.flashEl = document.getElementById("screenFlash");
       this.appEl = document.querySelector(".app") || document.body;
-      this.shakeTargets = [this.appEl, this.canvas, this.flashEl, document.getElementById("toasts"),
-        ...document.querySelectorAll(".modal, .defuse-overlay")].filter(Boolean);
+      this.baseShakeTargets = [this.appEl, this.canvas, this.flashEl, document.getElementById("toasts")].filter(Boolean);
+      this.overlayShakeTargets = Array.from(document.querySelectorAll(".modal, .defuse-overlay"));
+      this.shakeTargets = this.baseShakeTargets.slice();
       this.reduced = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
       this.resize();
       window.addEventListener("resize", () => this.resize());
@@ -105,6 +107,7 @@
     }
 
     add(particle) {
+      if (this.particles.length >= 200) return;
       particle.maxLife = particle.life;
       particle.age = 0;
       this.particles.push(particle);
@@ -119,6 +122,14 @@
 
     addTrauma(amount) {
       if (this.reduced) return;
+      const visibleOverlays = this.overlayShakeTargets.filter((element) =>
+        element.classList.contains("modal") ? element.classList.contains("is-open") : !element.hidden
+      );
+      const targets = this.baseShakeTargets.concat(visibleOverlays);
+      this.shakeTargets.forEach((element) => {
+        if (!targets.includes(element)) element.style.transform = "";
+      });
+      this.shakeTargets = targets;
       this.trauma = Math.min(1.0, this.trauma + amount);
       this.start();
     }
@@ -147,21 +158,22 @@
       ctx.clearRect(0, 0, this.width, this.height);
 
       if (this.trauma > 0) {
-        this.trauma = Math.max(0, this.trauma - dt * 1.35);
+        this.trauma = Math.max(0, this.trauma - dt * 1.7);
         const shake = this.trauma * this.trauma;
         this.shakeTime += dt * 32.0;
         if (!this.reduced) {
-          const offsetX = Math.sin(this.shakeTime * 1.8) * 24 * shake;
-          const offsetY = Math.cos(this.shakeTime * 2.3) * 18 * shake;
-          const rot = Math.sin(this.shakeTime * 1.2) * 1.6 * shake;
+          this.shaking = true;
+          const offsetX = Math.sin(this.shakeTime * 1.8) * 17 * shake;
+          const offsetY = Math.cos(this.shakeTime * 2.3) * 13 * shake;
           const transform =
             shake > 0.001
-              ? `translate3d(${offsetX.toFixed(2)}px, ${offsetY.toFixed(2)}px, 0) rotate(${rot.toFixed(2)}deg)`
+              ? `translate3d(${offsetX.toFixed(2)}px, ${offsetY.toFixed(2)}px, 0)`
               : "";
           this.shakeTargets.forEach((element) => { element.style.transform = transform; });
         }
-      } else {
+      } else if (this.shaking) {
         this.shakeTargets.forEach((element) => { element.style.transform = ""; });
+        this.shaking = false;
       }
 
       for (let index = this.particles.length - 1; index >= 0; index -= 1) {
@@ -187,7 +199,8 @@
         this.raf = requestAnimationFrame((next) => this.loop(next));
       } else {
         this.running = false;
-        this.shakeTargets.forEach((element) => { element.style.transform = ""; });
+        if (this.shaking) this.shakeTargets.forEach((element) => { element.style.transform = ""; });
+        this.shaking = false;
         ctx.clearRect(0, 0, this.width, this.height);
       }
     }

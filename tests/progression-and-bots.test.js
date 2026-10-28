@@ -370,6 +370,23 @@ test("la sacudida mueve todos los elementos y termina en reposo", () => {
   } finally { global.requestAnimationFrame = original; }
 });
 
+test("los efectos limitan partículas y solo sacuden las capas visibles", () => {
+  const fx = Object.create(BP.FX.prototype);
+  const base = { style: {} };
+  const modal = (open) => ({ style: {}, classList: { contains: (name) => name === "modal" || (name === "is-open" && open) } });
+  const visible = modal(true), hidden = modal(false);
+  Object.assign(fx, { particles: [], reduced: false, trauma: 0, baseShakeTargets: [base],
+    overlayShakeTargets: [visible, hidden], shakeTargets: [base], start() {} });
+  for (let i = 0; i < 250; i += 1) fx.add({ life: 1 });
+  assert.equal(fx.particles.length, 200);
+  fx.addTrauma(0.5);
+  assert.deepEqual(fx.shakeTargets, [base, visible]);
+  fx.reduced = true;
+  fx.trauma = 0;
+  fx.addTrauma(0.8);
+  assert.equal(fx.trauma, 0);
+});
+
 test("la extracción activa da monedas, forma combos y activa una descarga cada 25 clics", () => {
   const state = BP.Progression.createState();
   const store = { progression: state, addCoins(value) { state.coins += value; }, save() {},

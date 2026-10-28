@@ -84,8 +84,9 @@
       if (this.upgrade) {
         this.upgrade.disabled = cost === null || state.coins < cost;
         const nextPower = cost === null ? 0 : BP.Progression.extractorPower(extractor.level + 1);
-        this.upgrade.textContent = cost === null ? "Nivel máximo" : `Mejorar · ${BP.Progression.formatCoins(cost)} → +${BP.Progression.formatCoins(nextPower)}/clic`;
+        this.upgrade.textContent = cost === null ? "Nivel máximo" : `Mejorar · ${BP.Progression.formatCoins(cost)}`;
         this.upgrade.title = cost === null ? "Extractor al máximo" : `Siguiente nivel: ${BP.Progression.formatCoins(BP.Progression.extractorPower(extractor.level + 1))} monedas por clic; cada 10 niveles se duplica.`;
+        this.upgrade.setAttribute("aria-label", cost === null ? "Extractor al máximo" : `Mejorar por ${BP.Progression.formatCoins(cost)} monedas. Siguiente nivel: ${BP.Progression.formatCoins(nextPower)} por clic.`);
       }
       if (this.info) this.info.textContent = `Nivel ${extractor.level} · combo ×${combo}${this.ui.bots && now < this.ui.bots.extractionBoostUntil ? " · bots 1,5×" : ""}`;
       if (this.chargeLabel) this.chargeLabel.textContent = `${extractor.charge}/${CHARGE_MAX}`;

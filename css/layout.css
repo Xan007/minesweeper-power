@@ -162,6 +162,11 @@ details[open] > .contracts-head strong::before { content: "▾ "; }
   .extractor-button, .extractor-upgrade { min-height: 44px; min-width: 0; }
 }
 .core-panel > .panel-sub, .core-bot-hint { display: none; }
+.core-summary { cursor: pointer; list-style: none; }
+.core-summary::-webkit-details-marker { display: none; }
+.core-summary h2::before { content: "▸ "; }
+.core-panel[open] .core-summary h2::before { content: "▾ "; }
+.core-panel[open] .core-stats { margin-top: 8px; }
 .power-card { cursor: pointer; }
 .power-card:focus-visible { outline: 2px solid #000080; outline-offset: -4px; }
 .network-panel { margin: 8px 0; padding: 8px; border: 2px solid; border-color: var(--white) var(--dark) var(--dark) var(--white); background: var(--face); }
@@ -420,6 +425,19 @@ details[open] > .contracts-head strong::before { content: "▾ "; }
   display: flex;
   align-items: center;
   gap: 4px;
+}
+
+.toolbar-options { position: relative; }
+.toolbar-options summary { display: flex; align-items: center; justify-content: center; min-height: 24px; padding: 0 8px; border: 2px solid; border-color: var(--white) var(--dark) var(--dark) var(--white); background: var(--face); cursor: pointer; list-style: none; }
+.toolbar-options summary::-webkit-details-marker { display: none; }
+.toolbar-options summary::after { content: " ▾"; }
+.toolbar-options-menu { position: absolute; right: 0; top: 100%; z-index: 30; padding: 4px; background: var(--face); border: 2px solid; border-color: var(--white) var(--dark) var(--dark) var(--white); box-shadow: 1px 1px var(--black); }
+.toolbar-options-menu .chip-btn { white-space: nowrap; }
+@media (max-width: 760px) {
+  .toolbar-options { flex: 1; }
+  .toolbar-options summary { min-height: 44px; }
+  .toolbar-options-menu { min-width: 100%; }
+  .toolbar-options-menu .chip-btn { width: 100%; }
 }
 
 .toolbar-actions .chip-btn {
@@ -2109,3 +2127,7 @@ details[open] > .contracts-head strong::before { content: "▾ "; }
 }
 
 .intel-panel { display: none; }
+@media (max-width: 980px) {
+  .powers-panel { order: 0; }
+  .core-panel { order: 1; }
+}
