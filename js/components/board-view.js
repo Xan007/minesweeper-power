@@ -67,6 +67,13 @@
       this.shieldPips = $("#shieldPips");
       this.xrayCursor = $("#xrayCursor");
       this.xrayCursorLabel = $("#xrayCursorLabel");
+      this.powerTimer = $("#powerTimer");
+      this.powerTimerTitle = $("#powerTimerTitle");
+      this.powerTimerHint = $("#powerTimerHint");
+      this.powerTimerValue = $("#powerTimerValue");
+      this.powerTimerBar = $("#powerTimerBar");
+      this.freezeTimerRaf = null;
+      this.powerPointerId = null;
 
       this.cachePowers();
       this.bindEvents();
@@ -136,6 +143,19 @@
 
         this.setFace("focus");
 
+        const freeze = this.game.powers.freeze;
+        if (event.button === 0 && freeze && freeze.targeting) {
+          event.preventDefault();
+          this.powerPointerId = event.pointerId;
+          if (this.boardEl.setPointerCapture) this.boardEl.setPointerCapture(event.pointerId);
+          this.game.freezeCell(x, y);
+          return;
+        }
+        if (event.pointerType === "touch" && this.xrayActive) {
+          this.powerPointerId = event.pointerId;
+          if (this.boardEl.setPointerCapture) this.boardEl.setPointerCapture(event.pointerId);
+          return;
+        }
         if (event.pointerType === "touch") {
           this.touchStart = { x: event.clientX, y: event.clientY, cellX: x, cellY: y };
           this.cancelTouchTimer();
@@ -162,6 +182,12 @@
       this.boardEl.addEventListener("pointerup", (event) => {
         this.cancelTouchTimer();
         this.clearChordPreview();
+        if (this.powerPointerId != null && event.pointerId === this.powerPointerId) {
+          if (this.xrayActive && event.pointerType === "touch") this.handleXrayPointerMove(event);
+          this.powerPointerId = null;
+          if (this.boardEl.releasePointerCapture && this.boardEl.hasPointerCapture(event.pointerId)) this.boardEl.releasePointerCapture(event.pointerId);
+          return;
+        }
 
         if (this.game && this.game.status === "playing") {
           this.setFace("smile");
@@ -206,6 +232,18 @@
       });
 
       this.boardEl.addEventListener("pointermove", (event) => {
+        if (this.powerPointerId != null && event.pointerId === this.powerPointerId) {
+          const hit = document.elementFromPoint(event.clientX, event.clientY);
+          const cell = hit && hit.closest(".cell");
+          if (cell && this.boardEl.contains(cell)) {
+            if (this.game.powers.freeze.targeting && this.game.powers.freeze.dragEnabled) {
+              const x = Number(cell.dataset.x), y = Number(cell.dataset.y);
+              this.setFreezeArea(x, y, this.game.powers.freeze.areaSize);
+              this.game.freezeCell(x, y);
+            } else if (this.xrayActive) this.handleXrayPointerMove(event, cell);
+          }
+          return;
+        }
         if (this.touchStart && event.pointerType === "touch") {
           const dx = event.clientX - this.touchStart.x;
           const dy = event.clientY - this.touchStart.y;
@@ -242,6 +280,7 @@
       });
 
       this.boardEl.addEventListener("pointercancel", () => {
+        this.powerPointerId = null;
         this.cancelTouchTimer();
         this.touchStart = null;
         this.suppressClick = false;
@@ -532,6 +571,10 @@
         card.classList.toggle("is-hammer", id === "freeze" && power.hammerMode);
         card.classList.toggle("is-empty", power.charges <= 0 && !active);
 
+        if (id === "freeze") {
+          const description = card.querySelector(".power-desc");
+          if (description) description.textContent = power.dragEnabled ? "Mantén pulsado y arrastra. Luego rompe el hielo." : "Haz clic para congelar. Mejora para arrastrar.";
+        }
         const stateEl = this.powerStates[id];
         if (stateEl) {
           if (id === "xray" && power.active) {
@@ -602,6 +645,34 @@
         this.boardFrame.classList.toggle("is-freeze-targeting", Boolean(power.targeting));
         this.boardFrame.classList.toggle("is-hammer-targeting", Boolean(power.hammerMode));
       }
+      if (!this.powerTimer) return;
+      if (this.freezeTimerRaf) cancelAnimationFrame(this.freezeTimerRaf);
+      this.freezeTimerRaf = null;
+      const tick = () => {
+        if (power.targeting) {
+          this.renderPowerTimer("freeze", "Cañón", power.dragEnabled ? "Mantén pulsado y arrastra" : "Haz clic en las celdas", power.castEndsAt - performance.now(), 3000);
+        } else if (power.hammerMode && power.frozen.size) {
+          const earliest = Math.min(...Array.from(power.frozen.values(), (entry) => entry.expiresAt));
+          this.renderPowerTimer("freeze", "Martillo", "Rompe el hielo antes de que se derrita", earliest - performance.now(), power.thawDuration);
+        } else {
+          if (this.powerTimer.dataset.mode === "freeze") this.powerTimer.hidden = true;
+          this.freezeTimerRaf = null;
+          return;
+        }
+        this.freezeTimerRaf = requestAnimationFrame(tick);
+      };
+      tick();
+    }
+
+    renderPowerTimer(mode, title, hint, remaining, duration) {
+      if (!this.powerTimer) return;
+      const ms = Math.max(0, remaining);
+      this.powerTimer.hidden = false;
+      this.powerTimer.dataset.mode = mode;
+      this.powerTimerTitle.textContent = title;
+      this.powerTimerHint.textContent = hint;
+      this.powerTimerValue.textContent = `${(ms / 1000).toFixed(1)} s`;
+      this.powerTimerBar.style.transform = `scaleX(${Math.max(0, Math.min(1, ms / duration))})`;
     }
 
     setFreezeArea(x, y, size = 1) {
@@ -659,6 +730,7 @@
         const remaining = Math.max(0, this.xrayEndsAt - performance.now());
         const ratio = this.xrayDuration > 0 ? remaining / this.xrayDuration : 0;
         if (this.xrayCursor) this.xrayCursor.style.setProperty("--xray-progress", (ratio * 100).toFixed(1));
+        this.renderPowerTimer("xray", "Visión X", "Mueve el cursor o desliza sobre el tablero", remaining, this.xrayDuration);
         const label = `${(remaining / 1000).toFixed(1)}s`;
         if (label !== this.xrayLastLabel) {
           this.xrayLastLabel = label;
@@ -677,6 +749,7 @@
 
     endXray() {
       this.xrayActive = false;
+      if (this.powerTimer && this.powerTimer.dataset.mode === "xray") this.powerTimer.hidden = true;
       if (this.xrayRaf) cancelAnimationFrame(this.xrayRaf);
       this.xrayRaf = null;
       document.body.classList.remove("is-xray");
@@ -689,13 +762,14 @@
       this.clearPeek();
     }
 
-    handleXrayPointerMove(event) {
+    handleXrayPointerMove(event, hitCell = null) {
       if (!this.xrayActive || !this.xrayCursor) return;
       this.xrayCursor.hidden = false;
       this.xrayCursor.style.left = `${event.clientX}px`;
       this.xrayCursor.style.top = `${event.clientY}px`;
 
-      const cellEl = event.target.closest(".cell");
+      const hit = hitCell || (event.pointerType === "touch" && document.elementFromPoint ? document.elementFromPoint(event.clientX, event.clientY) : event.target);
+      const cellEl = hit && hit.closest(".cell");
       if (!cellEl || !this.game || !this.game.board) {
         this.clearPeek();
         return;
@@ -728,10 +802,10 @@
         } else if (nearby.adjacent > 0) {
           peek.dataset.kind = "number";
           peek.textContent = String(nearby.adjacent);
-          peek.style.color = NUMBER_COLORS[nearby.adjacent] || "";
+
         } else {
           peek.dataset.kind = "empty";
-          peek.textContent = "?";
+          peek.textContent = "·";
         }
         el.appendChild(peek);
         el.classList.add("is-peek");

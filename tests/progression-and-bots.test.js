@@ -519,6 +519,8 @@ test("mejorar habilidades amplia el hielo y la vision", () => {
   const medium = p.manualPowerStats({ freeze: 1, xray: 1 });
   const max = p.manualPowerStats({ freeze: 4, xray: 4 });
   assert.deepEqual([base.freeze.areaSize, medium.freeze.areaSize, max.freeze.areaSize], [1, 2, 3]);
+  assert.equal(base.freeze.dragEnabled, false);
+  assert.equal(medium.freeze.dragEnabled, true);
   assert.ok(max.xray.duration > base.xray.duration);
   assert.ok(max.xray.radius > base.xray.radius);
 });
@@ -561,4 +563,58 @@ test("el tablero mantiene celdas legibles incluso cuando debe desplazarse", () =
   view.boardViewport.clientWidth = 900;
   view.fitCellSize();
   assert.equal(cell, "48px");
+});
+
+test("el canon congela al mantener y arrastrar sin abrir al soltar", () => {
+  const previous = global.document;
+  const handlers = {}, frozen = [];
+  const first = { dataset: { x: "1", y: "2" } }, second = { dataset: { x: "2", y: "2" } };
+  let revealed = 0;
+  const view = Object.create(BP.BoardViewComponent.prototype);
+  const boardEl = { addEventListener: (name, callback) => { handlers[name] = callback; }, setPointerCapture() {}, hasPointerCapture: () => true, releasePointerCapture() {}, contains: () => true };
+  const game = { status: "playing", powers: { freeze: { targeting: true, hammerMode: false, areaSize: 1, dragEnabled: true } }, freezeCell: (x, y) => frozen.push([x, y]), reveal: () => { revealed += 1; } };
+  Object.assign(view, { ui: { game }, boardEl, setFace() {}, cancelTouchTimer() {}, clearChordPreview() {}, setFreezeArea() {} });
+  global.document = { elementFromPoint: () => ({ closest: () => second }) };
+  try {
+    view.bindBoardEvents();
+    const event = { target: { closest: () => first }, pointerType: "touch", pointerId: 9, button: 0, clientX: 10, clientY: 10, preventDefault() {} };
+    handlers.pointerdown(event);
+    handlers.pointermove(event);
+    game.powers.freeze.targeting = false;
+    game.powers.freeze.hammerMode = true;
+    handlers.pointerup(event);
+    assert.deepEqual(frozen, [[1, 2], [2, 2]]);
+    assert.equal(revealed, 0);
+  } finally { global.document = previous; }
+});
+
+test("el indicador de habilidad muestra tiempo y progreso acotados", () => {
+  const view = Object.create(BP.BoardViewComponent.prototype);
+  Object.assign(view, { powerTimer: { dataset: {}, hidden: true }, powerTimerTitle: {}, powerTimerHint: {}, powerTimerValue: {}, powerTimerBar: { style: {} } });
+  view.renderPowerTimer("freeze", "Canon", "Arrastra", 1500, 3000);
+  assert.equal(view.powerTimer.hidden, false);
+  assert.equal(view.powerTimerValue.textContent, "1.5 s");
+  assert.equal(view.powerTimerBar.style.transform, "scaleX(0.5)");
+  view.renderPowerTimer("xray", "Vision X", "Mueve", -100, 6000);
+  assert.equal(view.powerTimerValue.textContent, "0.0 s");
+  assert.equal(view.powerTimerBar.style.transform, "scaleX(0)");
+});
+
+test("sin mejorar el canon solo congela al pulsar, no al arrastrar", () => {
+  const previous = global.document;
+  const handlers = {}, frozen = [];
+  const first = { dataset: { x: "1", y: "2" } }, second = { dataset: { x: "2", y: "2" } };
+  const view = Object.create(BP.BoardViewComponent.prototype);
+  const boardEl = { addEventListener: (name, callback) => { handlers[name] = callback; }, setPointerCapture() {}, hasPointerCapture: () => true, releasePointerCapture() {}, contains: () => true };
+  const game = { status: "playing", powers: { freeze: { targeting: true, hammerMode: false, areaSize: 1, dragEnabled: false } }, freezeCell: (x, y) => frozen.push([x, y]) };
+  Object.assign(view, { ui: { game }, boardEl, setFace() {}, cancelTouchTimer() {}, clearChordPreview() {} });
+  global.document = { elementFromPoint: () => ({ closest: () => second }) };
+  try {
+    view.bindBoardEvents();
+    const event = { target: { closest: () => first }, pointerType: "mouse", pointerId: 2, button: 0, clientX: 10, clientY: 10, preventDefault() {} };
+    handlers.pointerdown(event);
+    handlers.pointermove(event);
+    handlers.pointerup(event);
+    assert.deepEqual(frozen, [[1, 2]]);
+  } finally { global.document = previous; }
 });

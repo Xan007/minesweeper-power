@@ -75,6 +75,7 @@
           targeting: false,
           hammerMode: false,
           areaSize: stats.freeze.areaSize,
+          dragEnabled: stats.freeze.dragEnabled,
           castEndsAt: 0,
           maxFrozen: stats.freeze.maxFrozen,
           thawDuration: stats.freeze.thawDuration,
@@ -517,12 +518,13 @@
       this.ui.setFreezeTargeting(true);
       this.ui.setHammerMode(false);
       this.ui.updateFreezeStatus(power);
-      this.ui.setStatus("Congela celdas durante 3 s; luego usa el martillo.", "ice");
+      const instruction = power.dragEnabled ? "Mantén pulsado y arrastra" : "Haz clic en las celdas";
+      this.ui.setStatus(`${instruction} para congelar; luego rompe el hielo.`, "ice");
       this.ui.setFace("focus");
       this.ui.updatePowers(this);
       this.ui.flashPowerCard("freeze");
       this.sound.play("power");
-      this.ui.toast("Haz clic rapidamente para congelar. El martillo aparece en 3 s.", "info");
+      this.ui.toast(`${instruction} para congelar. Luego usa el martillo.`, "info");
     }
 
     enterHammerMode() {
@@ -674,6 +676,7 @@
       if (power.frozen.size === 0) {
         power.hammerMode = false;
         this.ui.setHammerMode(false);
+        this.ui.updateFreezeStatus(power);
         this.ui.setFace("smile");
         this.ui.setStatus(this.defaultStatus(), "scan");
       } else {

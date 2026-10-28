@@ -9,8 +9,8 @@
   <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
   <link rel="stylesheet" href="css/base.css?v=classic-4">
   <link rel="stylesheet" href="css/layout.css?v=readable-17">
-  <link rel="stylesheet" href="css/board.css?v=classic-10">
-  <link rel="stylesheet" href="css/powers.css?v=balance-14">
+  <link rel="stylesheet" href="css/board.css?v=power-18">
+  <link rel="stylesheet" href="css/powers.css?v=power-18">
   <link rel="stylesheet" href="css/progression.css?v=readable-17">
 </head>
 <body>
@@ -193,7 +193,7 @@
                   <span class="power-name">Visión X</span>
                   <kbd>1</kbd>
                 </span>
-                <span class="power-desc">Inspecciona celdas durante 6 s.</span>
+                <span class="power-desc">Mueve el cursor o desliza para ver el interior.</span>
                 <span class="power-meta">
                   <span class="pips" data-pips="xray" aria-hidden="true"></span>
                   <span class="power-state" data-state="xray">2 usos</span>
@@ -239,7 +239,7 @@
                   <span class="power-name">Cañón criogénico</span>
                   <kbd>4</kbd>
                 </span>
-                <span class="power-desc">Congela celdas. Rómpelas con el martillo (H).</span>
+                <span class="power-desc">Haz clic para congelar. Mejora para arrastrar.</span>
                 <span class="power-meta">
                   <span class="pips" data-pips="freeze" aria-hidden="true"></span>
                   <span class="power-state" data-state="freeze">2 cargas</span>
@@ -410,6 +410,10 @@
             </div>
 
 
+            <div class="power-timer-strip" id="powerTimer" hidden aria-live="off">
+              <strong id="powerTimerTitle"></strong><span id="powerTimerHint"></span>
+              <b id="powerTimerValue"></b><span class="power-timer-track"><i id="powerTimerBar"></i></span>
+            </div>
             <div class="board-frame" id="boardFrame">
               <div class="board-viewport" id="boardViewport">
                 <div class="board" id="board" role="grid" aria-label="Tablero de buscaminas"></div>
@@ -981,7 +985,7 @@
 
   <script src="js/utils.js?v=classic-4" defer></script>
   <script src="js/config.js?v=classic-10" defer></script>
-  <script src="js/progression.js?v=readable-17" defer></script>
+  <script src="js/progression.js?v=power-18" defer></script>
   <script src="js/components/contracts.js?v=turbo-13" defer></script>
   <script src="js/components/extractor.js?v=turbo-13" defer></script>
   <script src="js/storage.js?v=mobile-11" defer></script>
@@ -992,7 +996,7 @@
   <script src="js/components/bot-brain.js?v=human-15" defer></script>
   <script src="js/components/bot-runner.js?v=human-15" defer></script>
   <script src="js/bots.js?v=balance-14" defer></script>
-  <script src="js/game.js?v=balance-14" defer></script>
+  <script src="js/game.js?v=power-18" defer></script>
   <script src="js/components/modals.js?v=classic-10" defer></script>
   <script src="js/components/board-view.js?v=balance-14" defer></script>
   <script src="js/components/hq.js?v=balance-14" defer></script>

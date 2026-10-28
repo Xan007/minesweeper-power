@@ -53,7 +53,7 @@
       maxLevel: 4,
       baseCost: 70,
       growth: 1.8,
-      manual: (level) => `${3 + Math.floor(level / 2)} cargas · ${level >= 3 ? 3 : level >= 1 ? 2 : 1}x${level >= 3 ? 3 : level >= 1 ? 2 : 1} · 3 s`,
+      manual: (level) => `${3 + Math.floor(level / 2)} cargas · ${level >= 3 ? 3 : level >= 1 ? 2 : 1}x${level >= 3 ? 3 : level >= 1 ? 2 : 1} · 3 s${level >= 1 ? " · arrastre" : " · clic"}`,
       bot: (level) => `${1 + Math.floor(level / 2)} celdas congeladas por tablero`,
     },
   };
@@ -372,6 +372,7 @@
       freeze: {
         charges: 3 + Math.floor(levels.freeze / 2),
         areaSize: levels.freeze >= 3 ? 3 : levels.freeze >= 1 ? 2 : 1,
+        dragEnabled: levels.freeze >= 1,
         maxFrozen: 27,
         thawDuration: 10000 + levels.freeze * 2000,
       },
