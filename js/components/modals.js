@@ -287,6 +287,7 @@
           ${details ? `<div class="result-detail"><strong>+${details.speedBonus}</strong><span>Velocidad</span></div>
           <div class="result-detail"><strong>+${details.flagBonus}</strong><span>${details.unflagged} sin bandera</span></div>
           ${details.salvageBonus ? `<div class="result-detail"><strong>+${details.salvageBonus}</strong><span>Refinería</span></div>` : ""}
+          ${details.streakBonus ? `<div class="result-detail"><strong>+${details.streakBonus}</strong><span>Racha experta</span></div>` : ""}
           ${details.contractBonus ? `<div class="result-detail"><strong>+${details.contractBonus}</strong><span>Contratos y rango</span></div>` : ""}` : ""}
         `;
       }

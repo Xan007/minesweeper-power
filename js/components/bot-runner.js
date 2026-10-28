@@ -190,6 +190,18 @@
         );
       } else {
         // Sin jugadas deterministas, usa habilidades equipadas o arriesga.
+        const support = this.manager.takeSharedScan ? this.manager.takeSharedScan(this.bot.id) : null;
+        if (support) {
+          const target = pickRandom(hidden);
+          this.status = "scan";
+          this.setThought(`${support} envió un escaneo: revisando (${target.x + 1}, ${target.y + 1}).`, "skill", target);
+          if (target.mine) this.board.toggleFlag(target.x, target.y);
+          else this.board.reveal(target.x, target.y);
+          this.steps += 1;
+          this.updateProgress();
+          if (this.board.allSafeRevealed()) this.finishWin(now);
+          return;
+        }
         if (this.charges.freeze > 0) {
           const center = this.pickFreezeCenter(hidden);
           if (center) {

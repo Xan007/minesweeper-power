@@ -156,6 +156,9 @@
       contracts: { date: "", completed: [] },
       rank: 0,
       fieldWins: 0,
+      expertStreak: 0,
+      bestExpertStreak: 0,
+      network: { level: 1, progress: 0, assists: 0, scans: [] },
       bots: [
         {
           id: "bot-1",
@@ -228,6 +231,15 @@
     base.turboCount = safeInt(raw.turboCount, 0, 999999, 0);
     base.rank = safeInt(raw.rank, 0, 999999, Math.floor(base.manualWins / 3));
     base.fieldWins = safeInt(raw.fieldWins, 0, 9999999, base.manualWins);
+    base.expertStreak = safeInt(raw.expertStreak, 0, 999999, 0);
+    base.bestExpertStreak = Math.max(base.expertStreak, safeInt(raw.bestExpertStreak, 0, 999999, 0));
+    if (raw.network && typeof raw.network === "object") {
+      base.network.level = safeInt(raw.network.level, 1, 9999, 1);
+      base.network.progress = safeInt(raw.network.progress, 0, Math.min(12, 2 + base.network.level) - 1, 0);
+      base.network.assists = safeInt(raw.network.assists, 0, 9999999, 0);
+      base.network.scans = Array.isArray(raw.network.scans)
+        ? raw.network.scans.filter((id) => typeof id === "string").slice(0, 6) : [];
+    }
     if (raw.contracts && typeof raw.contracts === "object") {
       base.contracts.date = /^\d{4}-\d{2}-\d{2}$/.test(raw.contracts.date) ? raw.contracts.date : "";
       base.contracts.completed = Array.isArray(raw.contracts.completed)
@@ -279,6 +291,9 @@
       });
       base.nextBotId = 2;
     }
+
+    const botIds = new Set(base.bots.map((bot) => bot.id));
+    base.network.scans = base.network.scans.filter((id) => botIds.has(id));
 
     const rawLog = Array.isArray(raw.log) ? raw.log.slice(0, 20) : [];
     base.log = rawLog
@@ -458,6 +473,18 @@
     return 6;
   }
 
+  function networkGoal(level) {
+    return Math.min(12, 2 + safeInt(level, 1, 9999, 1));
+  }
+
+  function networkReward(level) {
+    return Math.min(1000000, 100 * safeInt(level, 1, 9999, 1));
+  }
+
+  function expertStreakBonus(base, streak) {
+    return Math.round(Math.max(0, Number(base) || 0) * Math.min(1.5, safeInt(streak, 0, 999999, 0) * 0.1));
+  }
+
   function formatCoins(value) {
     const number = Math.max(0, Math.round(Number(value) || 0));
     try {
@@ -494,6 +521,9 @@
     manualLossReward,
     botReward,
     botBoardReward,
+    networkGoal,
+    networkReward,
+    expertStreakBonus,
     formatCoins,
     formatNumber,
   };

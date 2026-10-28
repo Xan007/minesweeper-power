@@ -8,10 +8,10 @@
   <title>Buscaminas Power · Edición clásica</title>
   <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
   <link rel="stylesheet" href="css/base.css?v=classic-4">
-  <link rel="stylesheet" href="css/layout.css?v=classic-7">
+  <link rel="stylesheet" href="css/layout.css?v=classic-8">
   <link rel="stylesheet" href="css/board.css?v=classic-4">
   <link rel="stylesheet" href="css/powers.css?v=classic-5">
-  <link rel="stylesheet" href="css/progression.css?v=classic-5">
+  <link rel="stylesheet" href="css/progression.css?v=classic-8">
 </head>
 <body>
   <svg class="svg-sprite" aria-hidden="true" focusable="false">
@@ -277,7 +277,7 @@
               <svg class="icon"><use href="#i-eye"></use></svg>
               En vivo
             </button>
-            <button class="mini-link" id="coreHireBtn" type="button">
+            <button class="mini-link" id="coreHireBtn" type="button" hidden>
               Contratar <span id="coreHireCost">25</span>
               <svg class="icon"><use href="#i-coin"></use></svg>
             </button>
@@ -417,11 +417,12 @@
               <p id="statusText">Listo. Haz clic para comenzar.</p>
               <span class="controls-hint">Clic: abrir · Clic der: bandera · H: martillo</span>
             </div>
-            <section class="contracts-panel" aria-label="Contratos diarios">
-              <div class="contracts-head"><strong>CONTRATOS DIARIOS</strong><span id="fieldRank">Rango 0 · 0/3 victorias</span></div>
+            <details class="contracts-panel">
+              <summary class="contracts-head"><strong>Contratos y racha</strong><span id="fieldRank">Rango 0 · 0/3 victorias</span></summary>
               <p>En dificultades clásicas · contrarreloj: 90 / 180 / 360 s</p>
               <ul id="contractsList" class="contracts-list"></ul>
-            </section>
+              <p id="expertStreak"></p>
+            </details>
           </div>
         </div>
 
@@ -496,10 +497,16 @@
 
           <!-- Muro de monitoreo de TODOS los bots a la vez en tiempo real -->
           <div class="spectator-multi-container" id="specMultiContainer">
+            <section class="network-panel" aria-label="Operación cooperativa">
+              <div class="network-head"><strong id="networkTitle">Red de bots</strong><b id="networkGoal">0 / 3 victorias</b></div>
+              <div class="network-bar" aria-hidden="true"><span id="networkProgress"></span></div>
+              <p id="networkHint">Contrata un segundo bot para desbloquear operaciones y apoyo compartido.</p>
+              <p id="networkScans"></p>
+            </section>
             <div class="spectator-multi-header">
               <div class="spec-multi-title">
                 <span class="spec-live-pulse"></span>
-                <strong>CENTRO DE MONITOREO SIMULTÁNEO</strong>
+                <strong>Tableros en vivo</strong>
                 <span class="spec-multi-sub" id="specMultiSubtitle">Resolviendo sectores en paralelo</span>
               </div>
               <div class="spec-multi-actions">
@@ -934,22 +941,22 @@
 
   <script src="js/utils.js?v=classic-4" defer></script>
   <script src="js/config.js?v=classic-4" defer></script>
-  <script src="js/progression.js?v=classic-7" defer></script>
-  <script src="js/components/contracts.js?v=classic-7" defer></script>
+  <script src="js/progression.js?v=classic-8" defer></script>
+  <script src="js/components/contracts.js?v=classic-8" defer></script>
   <script src="js/storage.js?v=classic-4" defer></script>
   <script src="js/audio.js?v=classic-4" defer></script>
-  <script src="js/effects.js?v=classic-7" defer></script>
+  <script src="js/effects.js?v=classic-8" defer></script>
   <script src="js/board.js?v=classic-4" defer></script>
   <script src="js/defuse.js?v=classic-4" defer></script>
   <script src="js/components/bot-brain.js?v=classic-6" defer></script>
-  <script src="js/components/bot-runner.js?v=classic-6" defer></script>
-  <script src="js/bots.js?v=classic-6" defer></script>
-  <script src="js/game.js?v=classic-7" defer></script>
-  <script src="js/components/modals.js?v=classic-7" defer></script>
+  <script src="js/components/bot-runner.js?v=classic-8" defer></script>
+  <script src="js/bots.js?v=classic-8" defer></script>
+  <script src="js/game.js?v=classic-8" defer></script>
+  <script src="js/components/modals.js?v=classic-8" defer></script>
   <script src="js/components/board-view.js?v=classic-7" defer></script>
   <script src="js/components/hq.js?v=classic-5" defer></script>
-  <script src="js/components/spectator.js?v=classic-6" defer></script>
-  <script src="js/ui.js?v=classic-7" defer></script>
+  <script src="js/components/spectator.js?v=classic-8" defer></script>
+  <script src="js/ui.js?v=classic-8" defer></script>
   <script src="js/app.js?v=classic-4" defer></script>
 </body>
 </html>

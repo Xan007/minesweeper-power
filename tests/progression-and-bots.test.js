@@ -8,9 +8,12 @@ require("../js/progression.js");
 require("../js/board.js");
 require("../js/components/bot-brain.js");
 require("../js/components/bot-runner.js");
+require("../js/bots.js");
 require("../js/components/contracts.js");
 require("../js/components/board-view.js");
+require("../js/components/spectator.js");
 require("../js/game.js");
+require("../js/effects.js");
 
 test("recompensas: velocidad y minas sin bandera dan bonos independientes", () => {
   const p = BP.Progression;
@@ -146,4 +149,91 @@ test("los contratos y rangos excluyen tableros personalizados", () => {
   const restored = BP.Progression.sanitizeState({ ...state, contracts: state.contracts });
   assert.equal(restored.rank, 1);
   assert.equal(restored.upgrades.salvage, 0);
+});
+
+test("los bots comparten escaneos con otros y completan operaciones persistentes", () => {
+  const state = BP.Progression.createState();
+  state.upgrades.capacity = 1;
+  state.bots.push({ ...state.bots[0], id: "bot-2", number: 2, name: "Scout-02", skills: {} });
+  const store = { progression: state, save() {}, addCoins(value) { state.coins += value; }, addProgressionLog() {} };
+  const manager = new BP.BotManager({ store });
+  const first = state.bots[0];
+  assert.equal(manager.recordNetworkWin(first), null);
+  assert.equal(manager.takeSharedScan(first.id), null);
+  assert.equal(manager.takeSharedScan("bot-2"), "Scout-01");
+  assert.equal(state.network.assists, 1);
+  manager.recordNetworkWin(first);
+  const reward = manager.recordNetworkWin(state.bots[1]);
+  assert.deepEqual(reward, { level: 1, reward: 100 });
+  assert.equal(state.network.level, 2);
+  assert.equal(state.network.progress, 0);
+  assert.equal(state.coins, 125);
+  const restored = BP.Progression.sanitizeState(state);
+  assert.equal(restored.network.level, 2);
+  assert.equal(restored.network.assists, 1);
+  assert.deepEqual(restored.network.scans, [first.id, "bot-2"]);
+});
+
+test("un bot atascado usa el escaneo compartido en su propio tablero", () => {
+  let marked = false;
+  const cell = { x: 2, y: 3, mine: true };
+  const runner = Object.create(BP.BotRunner.prototype);
+  Object.assign(runner, {
+    bot: { id: "recipient" }, manager: { takeSharedScan: () => "Scout-01" },
+    board: { toggleFlag: () => { marked = true; }, allSafeRevealed: () => false },
+    hiddenCells: () => [cell], analyze: () => ({ safe: [], mines: [], risks: [] }),
+    setThought: (message) => { runner.currentThought = message; }, updateProgress() {}, steps: 0,
+  });
+  runner.step(1000);
+  assert.equal(marked, true);
+  assert.equal(runner.status, "scan");
+  assert.match(runner.currentThought, /Scout-01/);
+});
+
+test("el panel de operaciones muestra cómo desbloquear y completar la red", () => {
+  const state = BP.Progression.createState();
+  const view = Object.create(BP.SpectatorComponent.prototype);
+  view.store = { progression: state };
+  view.ui = { bots: { isTurboActive: false, turboFreeRechargeReady: false, turboFreeRechargeRemainingMs: 120000 } };
+  view.networkTitle = {};
+  view.networkGoal = {};
+  view.networkProgress = { style: {} };
+  view.networkHint = {};
+  view.networkScans = {};
+  view.updateTurboUI();
+  assert.equal(view.networkGoal.textContent, "Bloqueada");
+  state.bots.push({ id: "bot-2" });
+  state.network.progress = 1;
+  view.updateTurboUI();
+  assert.match(view.networkGoal.textContent, /1 \/ 3/);
+  assert.match(view.networkHint.textContent, /otro bot/);
+});
+
+test("la racha experta multiplica la recompensa y tiene un límite", () => {
+  assert.equal(BP.Progression.expertStreakBonus(100, 1), 10);
+  assert.equal(BP.Progression.expertStreakBonus(100, 4), 40);
+  assert.equal(BP.Progression.expertStreakBonus(100, 100), 150);
+  const state = BP.Progression.createState();
+  state.expertStreak = 4;
+  state.bestExpertStreak = 7;
+  const restored = BP.Progression.sanitizeState(state);
+  assert.equal(restored.expertStreak, 4);
+  assert.equal(restored.bestExpertStreak, 7);
+});
+
+test("la sacudida mueve todos los elementos y termina en reposo", () => {
+  const original = global.requestAnimationFrame;
+  global.requestAnimationFrame = () => 1;
+  try {
+    const elements = Array.from({ length: 4 }, () => ({ style: {} }));
+    const fx = Object.create(BP.FX.prototype);
+    Object.assign(fx, { running: true, lastTime: 0, trauma: 1, shakeTime: 0, reduced: false,
+      ctx: { clearRect() {} }, width: 100, height: 100, particles: [], shakeTargets: elements });
+    fx.loop(16);
+    assert.ok(elements[0].style.transform.includes("translate3d"));
+    assert.ok(elements.every((element) => element.style.transform === elements[0].style.transform));
+    for (let time = 32; time <= 1600; time += 16) fx.loop(time);
+    assert.ok(elements.every((element) => element.style.transform === ""));
+    assert.equal(fx.running, false);
+  } finally { global.requestAnimationFrame = original; }
 });

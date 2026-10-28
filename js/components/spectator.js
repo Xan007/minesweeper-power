@@ -54,6 +54,11 @@
       this.specMultiGrid = $("#specMultiGrid");
       this.specMultiActiveCount = $("#specMultiActiveCount");
       this.specMultiTotalCoins = $("#specMultiTotalCoins");
+      this.networkTitle = $("#networkTitle");
+      this.networkGoal = $("#networkGoal");
+      this.networkProgress = $("#networkProgress");
+      this.networkHint = $("#networkHint");
+      this.networkScans = $("#networkScans");
 
       this.specBody = $("#specBody");
       this.specBackToAllBtn = $("#specBackToAllBtn");
@@ -213,6 +218,17 @@
       if (!this.bots || !this.store) return;
       const state = this.store.progression;
       const P = BP.Progression;
+
+      const network = state.network;
+      const goal = P.networkGoal(network.level);
+      const unlocked = state.bots.length >= 2;
+      if (this.networkTitle) this.networkTitle.textContent = unlocked ? `Operación ${network.level}` : "Red de bots";
+      if (this.networkGoal) this.networkGoal.textContent = unlocked ? `${network.progress} / ${goal} victorias · +${P.formatCoins(P.networkReward(network.level))}` : "Bloqueada";
+      if (this.networkProgress) this.networkProgress.style.width = unlocked ? `${100 * network.progress / goal}%` : "0%";
+      if (this.networkHint) this.networkHint.textContent = unlocked
+        ? "Cada victoria aporta un escaneo para otro bot. Completa la operación para ganar monedas."
+        : "Contrata un segundo bot en el Cuartel para desbloquear operaciones y apoyo compartido.";
+      if (this.networkScans) this.networkScans.textContent = unlocked ? `Escaneos disponibles: ${network.scans.length}/6 · apoyos usados: ${network.assists}` : "";
       const isTurbo = this.bots.isTurboActive;
       const freeReady = this.bots.turboFreeRechargeReady;
       const cost = P.turboCost(state.turboCount || 0);

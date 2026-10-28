@@ -15,6 +15,7 @@
       this.timer = null;
       this.lastEmit = 0;
       this.onUpdate = null;
+      this.onNetworkReward = null;
       this.turboUntil = 0;
       // Recarga automática: timestamp (performance.now) en el que se concede una carga gratis
       this.turboFreeRechargeAt = performance.now() + TURBO_FREE_RECHARGE_SECS * 1000;
@@ -235,6 +236,33 @@
       return { ok: true, equipped: bot.skills[skillId] };
     }
 
+    takeSharedScan(recipientId) {
+      const scans = this.state.network.scans;
+      const index = scans.findIndex((sourceId) => sourceId !== recipientId);
+      if (index < 0) return null;
+      const [sourceId] = scans.splice(index, 1);
+      const source = this.state.bots.find((bot) => bot.id === sourceId);
+      this.state.network.assists += 1;
+      this.store.save();
+      return source ? source.name : "Otro bot";
+    }
+
+    recordNetworkWin(bot) {
+      const network = this.state.network;
+      if (this.state.bots.length < 2) return null;
+      if (network.scans.length < 6) network.scans.push(bot.id);
+      network.progress += 1;
+      const goal = BP.Progression.networkGoal(network.level);
+      if (network.progress < goal) return null;
+      const completedLevel = network.level;
+      const reward = BP.Progression.networkReward(completedLevel);
+      network.progress = 0;
+      network.level += 1;
+      this.store.addCoins(reward);
+      this.store.addProgressionLog(`Red: operación ${completedLevel} completada · +${reward} monedas`, "success");
+      return { level: completedLevel, reward };
+    }
+
     completeBoard(runner, win, reward, rewardInfo) {
       const state = this.state;
       const bot = runner.bot;
@@ -246,6 +274,8 @@
         bot.losses += 1;
         state.botLosses += 1;
       }
+
+      const networkReward = win ? this.recordNetworkWin(bot) : null;
 
       if (reward > 0) {
         bot.coins = (bot.coins || 0) + reward;
@@ -274,6 +304,7 @@
       }
       this.store.save();
       this.emit();
+      if (networkReward && this.onNetworkReward) this.onNetworkReward(networkReward);
     }
 
     activeCount() {

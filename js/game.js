@@ -122,7 +122,7 @@
       this.ui.setFace("smile");
       this.ui.showStartHint(true);
       this.ui.setStatus(
-        `Sistema listo · ${this.modeLabel} ${this.config.width}×${this.config.height} · ${this.config.mines} minas.`,
+        "Haz clic en una celda para comenzar · clic derecho para poner bandera.",
         "normal"
       );
       this.ui.refreshStats();
@@ -219,6 +219,7 @@
       if (changed.length >= 8 && this.fx && this.fx.cascadeSparkle) {
         const elements = changed.slice(0, 24).map((c) => this.ui.getCellElement(c.x, c.y)).filter(Boolean);
         this.fx.cascadeSparkle(elements);
+        this.fx.shakeLight();
         this.sound.play("sparkle");
       }
       if (this.powers.immortal.active) {
@@ -913,14 +914,21 @@
 
       const reward = this.rewardDetails.total;
       const salvageBonus = Math.round(reward * (this.store.progression.upgrades.salvage || 0) * 0.1);
+      const progression = this.store.progression;
+      if (this.mode === "expert") {
+        progression.expertStreak += 1;
+        progression.bestExpertStreak = Math.max(progression.bestExpertStreak, progression.expertStreak);
+      }
+      const streakBonus = this.mode === "expert" ? BP.Progression.expertStreakBonus(reward, progression.expertStreak) : 0;
       this.store.progression.manualWins += 1;
       const usedPowers = Object.values(this.powers).reduce((sum, power) => sum + power.used, 0);
       const contracts = BP.Contracts.completeWin(this.store.progression, {
         mode: this.mode, elapsedMs: this.elapsedMs, usedPowers,
       });
       this.rewardDetails.salvageBonus = salvageBonus;
+      this.rewardDetails.streakBonus = streakBonus;
       this.rewardDetails.contractBonus = contracts.total;
-      this.lastReward = reward + salvageBonus + contracts.total;
+      this.lastReward = reward + salvageBonus + streakBonus + contracts.total;
       this.store.addCoins(this.lastReward);
       this.store.addProgressionLog(
         `Misión manual ${this.modeLabel} completada · +${BP.Progression.formatCoins(this.lastReward)} monedas`,
@@ -968,6 +976,7 @@
 
       const revealed = this.board ? this.board.revealedSafeCount : 0;
       const totalSafe = this.board ? this.board.safeCount : 1;
+      if (this.mode === "expert") this.store.progression.expertStreak = 0;
       const lossReward = BP.Progression.manualLossReward(this.mode, this.config, revealed, totalSafe);
       this.lastReward = lossReward;
       if (lossReward > 0) {

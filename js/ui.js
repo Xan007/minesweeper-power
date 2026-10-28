@@ -78,6 +78,12 @@
       this.game = game;
       this.bots = bots;
       if (this.bots) {
+        this.bots.onNetworkReward = ({ level, reward }) => {
+          this.sound.play("coin");
+          this.fx.coinBurst(this.coinChip, 22);
+          this.fx.shakeHeavy();
+          this.toast(`Operación ${level} completada · +${BP.Progression.formatCoins(reward)} monedas`, "success", 4200);
+        };
         this.bots.onUpdate = () => {
           this.hq.updateBotLive();
           this.hq.updateHqSummary();

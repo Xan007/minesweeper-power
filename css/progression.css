@@ -2221,3 +2221,6 @@
 }
 
 @media (max-width: 420px) { .top-actions #recordsBtn { display: inline-flex; } }
+
+/* El muro prioriza tableros y acciones; las métricas completas están en Detalle. */
+.spec-card-stats-row, .spec-card-foot { display: none; }

@@ -74,6 +74,8 @@
       this.shakeTime = 0;
       this.flashEl = document.getElementById("screenFlash");
       this.appEl = document.querySelector(".app") || document.body;
+      this.shakeTargets = [this.appEl, this.canvas, this.flashEl, document.getElementById("toasts"),
+        ...document.querySelectorAll(".modal, .defuse-overlay")].filter(Boolean);
       this.reduced = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
       this.resize();
       window.addEventListener("resize", () => this.resize());
@@ -145,20 +147,21 @@
       ctx.clearRect(0, 0, this.width, this.height);
 
       if (this.trauma > 0) {
-        this.trauma = Math.max(0, this.trauma - dt * 2.3);
+        this.trauma = Math.max(0, this.trauma - dt * 1.35);
         const shake = this.trauma * this.trauma;
         this.shakeTime += dt * 32.0;
-        if (!this.reduced && this.appEl) {
-          const offsetX = Math.sin(this.shakeTime * 1.8) * 12 * shake;
-          const offsetY = Math.cos(this.shakeTime * 2.3) * 8 * shake;
-          const rot = Math.sin(this.shakeTime * 1.2) * 1.4 * shake;
-          this.appEl.style.transform =
+        if (!this.reduced) {
+          const offsetX = Math.sin(this.shakeTime * 1.8) * 24 * shake;
+          const offsetY = Math.cos(this.shakeTime * 2.3) * 18 * shake;
+          const rot = Math.sin(this.shakeTime * 1.2) * 1.6 * shake;
+          const transform =
             shake > 0.001
               ? `translate3d(${offsetX.toFixed(2)}px, ${offsetY.toFixed(2)}px, 0) rotate(${rot.toFixed(2)}deg)`
               : "";
+          this.shakeTargets.forEach((element) => { element.style.transform = transform; });
         }
-      } else if (this.appEl && this.appEl.style.transform) {
-        this.appEl.style.transform = "";
+      } else {
+        this.shakeTargets.forEach((element) => { element.style.transform = ""; });
       }
 
       for (let index = this.particles.length - 1; index >= 0; index -= 1) {
@@ -184,7 +187,7 @@
         this.raf = requestAnimationFrame((next) => this.loop(next));
       } else {
         this.running = false;
-        if (this.appEl) this.appEl.style.transform = "";
+        this.shakeTargets.forEach((element) => { element.style.transform = ""; });
         ctx.clearRect(0, 0, this.width, this.height);
       }
     }

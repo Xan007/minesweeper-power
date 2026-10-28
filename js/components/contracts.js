@@ -42,16 +42,18 @@
       this.store = store;
       this.element = document.getElementById("contractsList");
       this.rank = document.getElementById("fieldRank");
+      this.streak = document.getElementById("expertStreak");
       this.lastSignature = "";
     }
 
     render() {
       const state = this.store.progression;
       const contracts = current(state);
-      const signature = JSON.stringify([state.rank, state.fieldWins, contracts]);
+      const signature = JSON.stringify([state.rank, state.fieldWins, state.expertStreak, state.bestExpertStreak, contracts]);
       if (signature === this.lastSignature) return;
       this.lastSignature = signature;
       if (this.rank) this.rank.textContent = `Rango ${state.rank} · ${state.fieldWins % 3}/3 victorias`;
+      if (this.streak) this.streak.textContent = `Racha experta: ${state.expertStreak} · récord: ${state.bestExpertStreak}. Cada victoria suma +10% (máx. +150%); perder en experto la reinicia.`;
       if (this.element) this.element.innerHTML = contracts.map((contract) => `
         <li class="contract${contract.completed ? " is-complete" : ""}">
           <span>${contract.completed ? "✓" : "□"} ${contract.label}</span>
