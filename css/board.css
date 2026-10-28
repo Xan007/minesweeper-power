@@ -66,6 +66,15 @@
   outline-offset: -4px;
 }
 
+/* El cursor auxiliar es visual: nunca captura ni mueve el puntero real. */
+body { cursor: url("../assets/cursor-classic.svg") 1 1, default; }
+.app button:not(:disabled) { cursor: url("../assets/cursor-classic.svg") 1 1, pointer; }
+.cell:not(.is-revealed):not(.is-flagged) { cursor: url("../assets/cursor-classic.svg") 1 1, pointer; }
+.cell.is-hint-safe { z-index: 2; outline: 3px solid #008000; outline-offset: -3px; }
+.cell.is-hint-mine { z-index: 2; outline: 3px solid #b00000; outline-offset: -3px; }
+.hint-cursor { position: absolute; z-index: 12; width: 28px; height: 36px; pointer-events: none; background: url("../assets/cursor-classic.svg") top left / 28px 36px no-repeat; animation: hint-arrive 0.8s ease-out both; filter: drop-shadow(1px 1px 1px #000); }
+@keyframes hint-arrive { from { transform: translate(-48px, -36px); opacity: 0; } to { transform: translate(0, 0); opacity: 1; } }
+
 /* ---------------- celda descubierta ---------------- */
 
 .cell.is-revealed {

@@ -62,6 +62,9 @@ test("los datos guardados conservan niveles y monedas", () => {
   const restored = BP.Progression.sanitizeState(state);
   assert.equal(restored.coins, 123);
   assert.equal(restored.upgrades.intelligence, 3);
+  assert.equal(restored.upgrades.advisor, 0);
+  state.upgrades.advisor = 4;
+  assert.equal(BP.Progression.sanitizeState(state).upgrades.advisor, 4);
 });
 
 test("los bots terminan tableros generados sin quedarse bloqueados", () => {
@@ -150,6 +153,69 @@ test("los contratos y rangos excluyen tableros personalizados", () => {
   const restored = BP.Progression.sanitizeState({ ...state, contracts: state.contracts });
   assert.equal(restored.rank, 1);
   assert.equal(restored.upgrades.salvage, 0);
+});
+
+test("el Consejero señala una jugada segura y no gasta pistas ante banderas erróneas o hielo", () => {
+  const board = new BP.Board(3, 2, 1);
+  board.generated = true;
+  board.getCell(0, 0).revealed = true;
+  board.getCell(0, 0).adjacent = 1;
+  board.getCell(1, 0).mine = true;
+  board.getCell(1, 0).flagged = true;
+  let hint;
+  let notice = "";
+  const ui = new Proxy({ showHint: (cell, isMine) => { hint = { cell, isMine }; }, toast: (message) => { notice = message; } },
+    { get: (object, key) => object[key] || (() => {}) });
+  const game = Object.create(BP.Game.prototype);
+  Object.assign(game, { board, config: { width: 3, height: 2, mines: 1 }, modeLabel: "Prueba", status: "playing", defuseActive: false, ui, sound: { play() {} },
+    powers: { hint: { charges: 3, used: 0 }, freeze: { targeting: false, hammerMode: false, frozen: new Map() } } });
+  assert.equal(game.requestHint(), true);
+  assert.equal(hint.isMine, false);
+  assert.equal(hint.cell.mine, false);
+  assert.equal(game.powers.hint.charges, 2);
+  board.getCell(2, 1).flagged = true;
+  assert.equal(game.requestHint(), false);
+  assert.match(notice, /incorrecta/);
+  assert.equal(game.powers.hint.charges, 2);
+  board.getCell(2, 1).flagged = false;
+  game.powers.freeze.frozen.set("2,1", {});
+  assert.equal(game.requestHint(), false);
+  assert.match(notice, /hielo/);
+  assert.equal(game.powers.hint.charges, 2);
+});
+
+test("el Consejero no presenta una conjetura como segura ni consume carga", () => {
+  const board = new BP.Board(3, 2, 1);
+  board.generated = true;
+  board.getCell(0, 0).revealed = true;
+  board.getCell(0, 0).adjacent = 1;
+  let message = "";
+  const game = Object.create(BP.Game.prototype);
+  Object.assign(game, { board, status: "playing", defuseActive: false,
+    ui: { toast: (value) => { message = value; } },
+    powers: { hint: { charges: 3, used: 0 }, freeze: { frozen: new Map() } } });
+  assert.equal(game.requestHint(), false);
+  assert.match(message, /No hay una jugada segura/);
+  assert.equal(game.powers.hint.charges, 3);
+});
+
+test("el Consejero diferencia una mina deducida de una celda segura", () => {
+  const board = new BP.Board(3, 2, 1);
+  board.generated = true;
+  board.getCell(0, 0).revealed = true;
+  board.getCell(0, 0).adjacent = 1;
+  board.getCell(0, 1).revealed = true;
+  board.getCell(1, 1).revealed = true;
+  board.getCell(1, 0).mine = true;
+  let result;
+  const ui = new Proxy({ showHint: (cell, isMine) => { result = { cell, isMine }; } },
+    { get: (object, key) => object[key] || (() => {}) });
+  const game = Object.create(BP.Game.prototype);
+  Object.assign(game, { board, config: { width: 3, height: 2, mines: 1 }, status: "playing", defuseActive: false,
+    ui, sound: { play() {} }, powers: { hint: { charges: 3, used: 0 }, freeze: { frozen: new Map() } } });
+  assert.equal(game.requestHint(), true);
+  assert.equal(result.isMine, true);
+  assert.equal(result.cell, board.getCell(1, 0));
 });
 
 test("los bots comparten escaneos con otros y completan operaciones persistentes", () => {

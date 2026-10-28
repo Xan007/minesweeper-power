@@ -364,6 +364,8 @@
     buildBoard(board) { this.boardView.buildBoard(board); }
     fitCellSize() { this.boardView.fitCellSize(); }
     getCellElement(x, y) { return this.boardView.getCellElement(x, y); }
+    showHint(cell, isMine) { this.boardView.showHint(cell, isMine); }
+    clearHint() { this.boardView.clearHint(); }
     updateCell(cell) { this.boardView.updateCell(cell); }
     updateAllCells() { this.boardView.updateAllCells(); }
     revealCells(cells) { this.boardView.revealCells(cells); }

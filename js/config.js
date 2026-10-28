@@ -37,6 +37,12 @@
   };
 
   const POWER_DEFS = {
+    hint: {
+      id: "hint",
+      name: "Consejero",
+      key: "5",
+      charges: 3,
+    },
     xray: {
       id: "xray",
       name: "Visión X",

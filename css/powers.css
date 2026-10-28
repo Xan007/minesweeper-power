@@ -54,6 +54,7 @@
 }
 
 .power-card--xray { --power: #000080; }
+.power-card--hint { --power: #800080; }
 .power-card--defuse { --power: #808000; }
 .power-card--immortal { --power: #008000; }
 .power-card--freeze { --power: #0000ff; }

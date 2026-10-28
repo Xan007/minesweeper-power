@@ -114,6 +114,13 @@
       effect: (level) => `+${level * 10}% por victoria`,
       next: (level) => `+${(level + 1) * 10}% por victoria`,
     },
+    advisor: {
+      id: "advisor", name: "Consejero ampliado", short: "Consejero", icon: "i-target",
+      maxLevel: 10, baseCost: 100, growth: 1.55,
+      description: "Añade una pista del Consejero desde la siguiente partida.",
+      effect: (level) => `${3 + level} pistas por partida`,
+      next: (level) => `${4 + level} pistas por partida`,
+    },
   };
 
   function roundedCost(base, growth, level) {
@@ -180,6 +187,7 @@
         speed: 0,
         intelligence: 0,
         salvage: 0,
+        advisor: 0,
       },
       skills: {
         xray: 0,

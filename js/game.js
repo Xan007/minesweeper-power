@@ -43,7 +43,9 @@
     createPowers() {
       const skills = this.store && this.store.progression ? this.store.progression.skills : null;
       const stats = BP.Progression.manualPowerStats(skills);
+      const hints = 3 + (this.store && this.store.progression ? this.store.progression.upgrades.advisor || 0 : 0);
       return {
+        hint: { charges: hints, maxCharges: hints, used: 0 },
         xray: {
           charges: stats.xray.charges,
           maxCharges: stats.xray.charges,
@@ -90,6 +92,7 @@
       this.ui.clearHammerHover();
       this.ui.hideShield();
       this.ui.cancelPeek();
+      this.ui.clearHint();
 
       const normalized = BP.normalizeConfig(config.width, config.height, config.mines);
       this.config = {
@@ -197,6 +200,7 @@
       }
 
       if (cell.revealed || cell.flagged) return;
+      this.ui.clearHint();
 
       const shieldWasActive = this.powers.immortal.active;
       if (shieldWasActive) this.spendShieldClick();
@@ -276,6 +280,7 @@
       }
       const flagged = this.board.toggleFlag(x, y);
       if (!flagged) return;
+      this.ui.clearHint();
       this.ui.updateCell(cell);
       this.sound.play(flagged.flagged ? "flag" : "unflag");
       this.ui.updateHud(this);
@@ -286,6 +291,7 @@
       if (this.status !== "playing" || this.defuseActive || !this.board) return;
       if (this.powers.freeze.targeting || this.powers.freeze.hammerMode) return;
       if (!this.board.canChord(x, y)) return;
+      this.ui.clearHint();
 
       const shieldWasActive = this.powers.immortal.active;
       if (shieldWasActive) this.spendShieldClick();
@@ -326,11 +332,45 @@
 
       if (id === "xray") {
         this.activateXray();
+      } else if (id === "hint") {
+        this.requestHint();
       } else if (id === "immortal") {
         this.activateImmortal();
       } else if (id === "freeze") {
         this.toggleFreezeTool();
       }
+    }
+
+    requestHint() {
+      if (!this.guardPower("hint")) return false;
+      if (this.powers.freeze.frozen.size > 0) {
+        this.ui.toast("Rompe el hielo o espera a que se derrita para solicitar una pista.", "warn", 4000);
+        return false;
+      }
+      let wrongFlag = false;
+      this.board.forEach((cell) => { if (cell.flagged && !cell.mine) wrongFlag = true; });
+      if (wrongFlag) {
+        this.ui.toast("Revisa tus banderas: al menos una es incorrecta. No se gastó la pista.", "warn", 4000);
+        return false;
+      }
+      const analysis = BP.BotBrain.analyze(this.board);
+      const target = analysis.safe[0] || analysis.mines[0];
+      if (!target) {
+        this.ui.toast("No hay una jugada segura que el consejero pueda deducir. Prueba Visión X.", "info", 4000);
+        return false;
+      }
+      const isMine = analysis.safe.length === 0;
+      this.cancelFreeze(false);
+      this.powers.hint.charges -= 1;
+      this.powers.hint.used += 1;
+      const action = isMine ? "Clic derecho: marca esta mina" : "Clic izquierdo: abre esta celda segura";
+      this.ui.showHint(target, isMine);
+      this.ui.setStatus(`${action} · fila ${target.y + 1}, columna ${target.x + 1}.`, "scan");
+      this.ui.toast(`${action}. Deducido de las pistas y banderas visibles.`, "info", 4000);
+      this.ui.updatePowers(this);
+      this.ui.flashPowerCard("hint");
+      this.sound.play("click");
+      return true;
     }
 
     guardPower(id) {
@@ -558,6 +598,7 @@
       }
 
       const now = performance.now();
+      this.ui.clearHint();
       power.charges -= 1;
       power.used += 1;
       power.lastCenter = `${x},${y}`;
@@ -616,6 +657,7 @@
       }
 
       power.frozen.delete(key);
+      this.ui.clearHint();
       cell.frozen = false;
       this.ui.clearHammerHover();
       this.lastActionAt = performance.now();
@@ -900,6 +942,7 @@
       this.cancelFreeze(false);
       this.clearFrozenCells(false);
       this.endShield(false);
+      this.ui.clearHint();
       this.rewardDetails = BP.Progression.manualRewardDetails(
         this.mode, this.config, this.elapsedMs, this.board.flagsPlaced, this.board.minesDefused
       );
@@ -963,6 +1006,7 @@
       this.cancelFreeze(false);
       this.clearFrozenCells(false);
       this.endShield(false);
+      this.ui.clearHint();
 
       this.board.revealAllMines(cell);
       this.ui.updateAllCells();
@@ -1009,6 +1053,7 @@
         defuse: this.powers.defuse.used,
         immortal: this.powers.immortal.used,
         freeze: this.powers.freeze.used,
+        hint: this.powers.hint.used,
       };
       const entry = {
         id: `${Date.now()}-${Math.random().toString(16).slice(2)}`,
@@ -1031,7 +1076,8 @@
         this.powers.xray.used +
         this.powers.defuse.used +
         this.powers.immortal.used +
-        this.powers.freeze.used;
+        this.powers.freeze.used +
+        this.powers.hint.used;
       return {
         result: isWin ? "win" : "lose",
         reason,
@@ -1043,7 +1089,7 @@
         height: this.config.height,
         mines: this.config.mines,
         usedPowers,
-        totalPowers: 6,
+        totalPowers: Object.values(this.powers).reduce((sum, power) => sum + power.maxCharges, 0),
         reward: this.lastReward,
         rewardDetails: this.rewardDetails,
         coins: this.store.progression.coins,

@@ -4,6 +4,8 @@ La partida manual debe ser interesante por sí misma: leer pistas, decidir si ar
 
 La estación de extracción permite obtener monedas continuamente con clics. Los clics seguidos elevan el combo hasta ×5; cada 25 clics se cobra una descarga y los bots activos reciben 1,5× de velocidad durante ocho segundos. La potencia se puede mejorar hasta el nivel 100 y se duplica cada diez niveles. La carga y las mejoras se guardan; el combo y el impulso temporal se reinician al recargar.
 
+El Consejero señala una jugada deducible y dibuja un cursor auxiliar de estilo clásico; el puntero del sistema permanece bajo el control del jugador. Hay tres pistas por partida y pueden ampliarse en el Cuartel. Una bandera incorrecta, una celda congelada o la ausencia de una deducción hacen que avise sin consumir una pista. Usar el Consejero cuenta como usar un poder para los contratos.
+
 ## Recorrido actual
 
 1. **Primeros minutos:** el primer clic es seguro; el jugador conoce el tablero, las banderas y los cuatro poderes. Un bot y monedas iniciales permiten probar las primeras mejoras.

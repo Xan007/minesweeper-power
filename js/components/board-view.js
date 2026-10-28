@@ -37,6 +37,9 @@
       this.lastPing = 0;
       this.peekKey = null;
       this.peekEl = null;
+      this.hintTimer = null;
+      this.hintTarget = null;
+      this.hintCursor = null;
 
       this.xrayActive = false;
       this.xrayRaf = null;
@@ -266,6 +269,7 @@
         else if (key === "2") this.game.usePower("defuse");
         else if (key === "3") this.game.usePower("immortal");
         else if (key === "4" || key === "H") this.game.usePower("freeze");
+        else if (key === "5") this.game.usePower("hint");
         else if (key === "F2") {
           event.preventDefault();
           this.ui.startSameGame();
@@ -320,6 +324,36 @@
 
     getCellElement(x, y) {
       return this.cellElements.get(`${x},${y}`) || null;
+    }
+
+    clearHint() {
+      if (this.hintTimer) window.clearTimeout(this.hintTimer);
+      this.hintTimer = null;
+      const hadHint = Boolean(this.hintTarget);
+      if (this.hintTarget) this.hintTarget.classList.remove("is-hint-safe", "is-hint-mine");
+      if (this.hintCursor) this.hintCursor.remove();
+      this.hintTarget = null;
+      this.hintCursor = null;
+      if (hadHint && this.game && this.game.status === "playing") this.setStatus(this.game.defaultStatus(), "scan");
+    }
+
+    showHint(cell, isMine) {
+      this.clearHint();
+      const target = this.getCellElement(cell.x, cell.y);
+      if (!target || !this.boardFrame) return;
+      target.scrollIntoView({ block: "nearest", inline: "nearest" });
+      const rect = target.getBoundingClientRect();
+      const frame = this.boardFrame.getBoundingClientRect();
+      target.classList.add(isMine ? "is-hint-mine" : "is-hint-safe");
+      this.hintTarget = target;
+      const cursor = document.createElement("span");
+      cursor.className = "hint-cursor";
+      cursor.setAttribute("aria-hidden", "true");
+      cursor.style.left = `${rect.left - frame.left + rect.width / 2}px`;
+      cursor.style.top = `${rect.top - frame.top + rect.height / 2}px`;
+      this.boardFrame.appendChild(cursor);
+      this.hintCursor = cursor;
+      this.hintTimer = window.setTimeout(() => this.clearHint(), 7000);
     }
 
     updateCell(cell) {
@@ -492,13 +526,16 @@
         const pipsEl = this.powerPips[id];
         if (pipsEl) {
           let pips = "";
-          const total = BP.POWER_DEFS[id].charges || 3;
+          const total = power.maxCharges;
           for (let i = 0; i < total; i += 1) {
             pips += `<i class="${i < power.charges ? "is-filled" : ""}"></i>`;
           }
           pipsEl.innerHTML = pips;
         }
       });
+      const total = Object.values(game.powers).reduce((sum, power) => sum + power.charges, 0);
+      const totalEl = $("#powerCharges");
+      if (totalEl) totalEl.textContent = String(total);
     }
 
     flashPowerCard(id) {

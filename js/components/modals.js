@@ -184,7 +184,7 @@
               const win = entry.result === "win";
               const powers = entry.powers || {};
               const used = Object.values(powers).reduce((s, v) => s + (Number(v) || 0), 0);
-              const breakdown = `Visión ${Number(powers.xray) || 0} · Desarme ${Number(powers.defuse) || 0} · Escudo ${Number(powers.immortal) || 0} · Crio ${Number(powers.freeze) || 0}`;
+              const breakdown = `Visión ${Number(powers.xray) || 0} · Desarme ${Number(powers.defuse) || 0} · Escudo ${Number(powers.immortal) || 0} · Crio ${Number(powers.freeze) || 0} · Consejero ${Number(powers.hint) || 0}`;
               return `
                 <div class="history-row">
                   <div class="history-mode">${U.escapeHtml(entry.modeLabel)}<small>${entry.width}×${entry.height} · ${entry.mines} minas</small></div>
