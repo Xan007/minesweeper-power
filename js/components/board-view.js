@@ -698,7 +698,7 @@
       $$(".is-hammer-hover", this.boardEl).forEach((el) => el.classList.remove("is-hammer-hover"));
     }
 
-    startXray(endsAt, duration) {
+    startXray(endsAt, duration, level = 0) {
       this.xrayActive = true;
       this.xrayEndsAt = endsAt;
       this.xrayDuration = duration || 5000;
@@ -706,6 +706,7 @@
       document.body.classList.add("is-xray");
       if (this.boardFrame) {
         this.boardFrame.classList.add("is-xray", "has-xray-active");
+        this.boardFrame.dataset.xrayLevel = String(level);
       }
       if (this.xrayCursor) this.xrayCursor.hidden = false;
 
@@ -728,7 +729,7 @@
         const remaining = Math.max(0, this.xrayEndsAt - performance.now());
         const ratio = this.xrayDuration > 0 ? remaining / this.xrayDuration : 0;
         if (this.xrayCursor) this.xrayCursor.style.setProperty("--xray-progress", (ratio * 100).toFixed(1));
-        this.renderPowerTimer("xray", "Visión X", "Mueve el cursor o desliza sobre el tablero", remaining, this.xrayDuration);
+        this.renderPowerTimer("xray", this.game.powers.xray.clarityLevel >= 4 ? "Visión X · nítida" : "Visión X · borrosa", "Mueve el cursor o desliza sobre el tablero", remaining, this.xrayDuration);
         const label = `${(remaining / 1000).toFixed(1)}s`;
         if (label !== this.xrayLastLabel) {
           this.xrayLastLabel = label;
@@ -751,7 +752,10 @@
       if (this.xrayRaf) cancelAnimationFrame(this.xrayRaf);
       this.xrayRaf = null;
       document.body.classList.remove("is-xray");
-      if (this.boardFrame) this.boardFrame.classList.remove("is-xray", "has-xray-active");
+      if (this.boardFrame) {
+        this.boardFrame.classList.remove("is-xray", "has-xray-active");
+        delete this.boardFrame.dataset.xrayLevel;
+      }
       if (this.xrayCursor) {
         this.xrayCursor.hidden = true;
         this.xrayCursor.style.setProperty("--xray-progress", "100");
@@ -786,10 +790,13 @@
       this.clearPeek();
       this.peekKey = key;
       this.peekElements = [];
-      const radius = this.game.powers.xray.radius;
+      const size = this.game.powers.xray.areaSize;
+      const offset = Math.floor((size - 1) / 2);
+      const left = cell.x - offset;
+      const top = cell.y - offset;
       const board = this.game.board;
-      const start = this.getCellElement(Math.max(0, cell.x - radius), Math.max(0, cell.y - radius));
-      const end = this.getCellElement(Math.min(board.width - 1, cell.x + radius), Math.min(board.height - 1, cell.y + radius));
+      const start = this.getCellElement(Math.max(0, left), Math.max(0, top));
+      const end = this.getCellElement(Math.min(board.width - 1, left + size - 1), Math.min(board.height - 1, top + size - 1));
       if (start && end) {
         const lens = document.createElement("span");
         lens.className = "xray-lens";
@@ -801,23 +808,26 @@
         this.boardEl.appendChild(lens);
         this.peekLens = lens;
       }
-      for (let dy = -radius; dy <= radius; dy += 1) for (let dx = -radius; dx <= radius; dx += 1) {
-        const nearby = this.game.board.getCell(cell.x + dx, cell.y + dy);
+      for (let dy = 0; dy < size; dy += 1) for (let dx = 0; dx < size; dx += 1) {
+        const nearby = this.game.board.getCell(left + dx, top + dy);
         if (!nearby || nearby.revealed) continue;
         const el = this.getCellElement(nearby.x, nearby.y);
         if (!el) continue;
         const peek = document.createElement("span");
         peek.className = "peek";
+        const content = document.createElement("span");
+        content.className = "peek-content";
         if (nearby.mine) {
           peek.dataset.kind = "mine";
-          peek.innerHTML = U.icon("i-bomb");
+          content.innerHTML = U.icon("i-bomb");
         } else if (nearby.adjacent > 0) {
           peek.dataset.kind = "number";
-          peek.textContent = String(nearby.adjacent);
+          content.textContent = String(nearby.adjacent);
         } else {
           peek.dataset.kind = "empty";
-          peek.textContent = "";
+          content.textContent = "";
         }
+        peek.appendChild(content);
         el.appendChild(peek);
         el.classList.add("is-peek");
         this.peekElements.push(el);

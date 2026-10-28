@@ -20,7 +20,7 @@
       maxLevel: 4,
       baseCost: 60,
       growth: 1.8,
-      manual: (level) => `${3 + level} usos · ${(6000 + level * 1500) / 1000} s · ${level >= 4 ? 5 : 3}x${level >= 4 ? 5 : 3}`,
+      manual: (level) => `${3 + level} usos · ${(6000 + level * 1500) / 1000} s · ${level >= 4 ? "3x3 nítida" : `2x2 · nitidez ${level}/4`}`,
       bot: (level) => `${1 + level} escaneos por tablero`,
     },
     defuse: {
@@ -360,7 +360,8 @@
       xray: {
         charges: 3 + levels.xray,
         duration: 6000 + levels.xray * 1500,
-        radius: levels.xray >= 4 ? 2 : 1,
+        areaSize: levels.xray >= 4 ? 3 : 2,
+        clarityLevel: levels.xray,
       },
       defuse: {
         charges: 3 + levels.defuse,

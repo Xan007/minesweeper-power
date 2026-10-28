@@ -76,7 +76,7 @@
 
   const TIPS = [
     "El primer clic siempre es seguro. El reloj arranca al descubrir la primera celda.",
-    "La Visión X despliega un radar 3x3 que revela toda el área alrededor del cursor.",
+    "La Visión X mejora su nitidez y alcanza 3x3 en el nivel máximo.",
     "El escudo fulmina la mina con un rayo celestial que absorbe el impacto y te da +15 monedas.",
     "Congela una celda y haz clic en ella para reventarla con el martillo 🔨. Si hay mina, te da +10 monedas.",
     "En el kit de desarme, corta el cable en la zona blanca para obtener +10 monedas extra.",

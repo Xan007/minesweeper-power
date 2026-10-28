@@ -522,7 +522,10 @@ test("mejorar habilidades amplia el hielo y la vision", () => {
   assert.equal(base.freeze.dragEnabled, false);
   assert.equal(medium.freeze.dragEnabled, true);
   assert.ok(max.xray.duration > base.xray.duration);
-  assert.ok(max.xray.radius > base.xray.radius);
+  assert.deepEqual([base.xray.areaSize, medium.xray.areaSize, max.xray.areaSize], [2, 2, 3]);
+  assert.equal(max.xray.clarityLevel, 4);
+  assert.match(p.SKILL_DEFS.xray.manual(3), /nitidez 3\/4/);
+  assert.match(p.SKILL_DEFS.xray.manual(4), /3x3 nítida/);
 });
 
 test("el bot abre una celda segura cercana antes de arriesgar", () => {

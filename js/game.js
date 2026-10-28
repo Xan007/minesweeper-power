@@ -53,7 +53,8 @@
           active: false,
           endsAt: 0,
           duration: stats.xray.duration,
-          radius: stats.xray.radius,
+          areaSize: stats.xray.areaSize,
+          clarityLevel: stats.xray.clarityLevel,
         },
         defuse: {
           charges: stats.defuse.charges,
@@ -412,7 +413,7 @@
       power.active = true;
       power.endsAt = performance.now() + power.duration;
 
-      this.ui.startXray(power.endsAt, power.duration);
+      this.ui.startXray(power.endsAt, power.duration, power.clarityLevel);
       this.ui.setStatus("Visión X activa · apunta a una celda para ver su contenido.", "scan");
       this.ui.setFace("focus");
       this.ui.updatePowers(this);

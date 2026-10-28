@@ -407,7 +407,7 @@
     clearFreezeArea() { this.boardView.clearFreezeArea(); }
     setHammerHover(x, y) { this.boardView.setHammerHover(x, y); }
     clearHammerHover() { this.boardView.clearHammerHover(); }
-    startXray(endsAt, dur) { this.boardView.startXray(endsAt, dur); }
+    startXray(endsAt, dur, level) { this.boardView.startXray(endsAt, dur, level); }
     endXray(silent) { this.boardView.endXray(silent); }
     cancelPeek() { this.boardView.clearPeek(); }
     clearPeek() { this.boardView.clearPeek(); }
