@@ -748,7 +748,7 @@
         const remaining = Math.max(0, this.xrayEndsAt - performance.now());
         const ratio = this.xrayDuration > 0 ? remaining / this.xrayDuration : 0;
         if (this.xrayCursor) this.xrayCursor.style.setProperty("--xray-progress", (ratio * 100).toFixed(1));
-        this.renderPowerTimer("xray", this.game.powers.xray.clarityLevel >= 4 ? "Visión X · 3x3" : "Visión X · centro nítido", "Apunta y haz clic · en móvil, toca dos veces", remaining, this.xrayDuration);
+        this.renderPowerTimer("xray", this.game.powers.xray.clarityLevel >= 4 ? "Visión X · 3x3" : "Visión X · 1x1", "Apunta y haz clic · en móvil, toca dos veces", remaining, this.xrayDuration);
         const label = `${(remaining / 1000).toFixed(1)}s`;
         if (label !== this.xrayLastLabel) {
           this.xrayLastLabel = label;
