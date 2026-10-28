@@ -810,7 +810,7 @@
       }
       this.sound.play("shieldActivate");
       this.sound.play("shield");
-      this.ui.toast("Inmortalidad activa · tus próximos 5 clics están blindados.", "success");
+      this.ui.toast(`Inmortalidad activa · ${power.maxClicks} clics protegidos.`, "success");
     }
 
     spendShieldClick() {

@@ -333,7 +333,11 @@
         if (this.ui.activeModal) return;
 
         const key = event.key.toUpperCase();
-        if (key === "1") this.game.usePower("xray");
+        if (key === "ESCAPE") {
+          if (this.game.powers.freeze.targeting || this.game.powers.freeze.hammerMode) this.game.cancelFreeze(true);
+          else if (this.game.powers.xray.active) this.game.endXray();
+        }
+        else if (key === "1") this.game.usePower("xray");
         else if (key === "2") this.game.usePower("defuse");
         else if (key === "3") this.game.usePower("immortal");
         else if (key === "4" || key === "H") this.game.usePower("freeze");
@@ -571,6 +575,10 @@
         card.classList.toggle("is-hammer", id === "freeze" && power.hammerMode);
         card.classList.toggle("is-empty", power.charges <= 0 && !active);
 
+        if (id === "immortal") {
+          const description = card.querySelector(".power-desc");
+          if (description) description.textContent = `Protección durante ${power.maxClicks} clics.`;
+        }
         if (id === "freeze") {
           const description = card.querySelector(".power-desc");
           if (description) description.textContent = power.dragEnabled ? "Mantén pulsado y arrastra. Luego rompe el hielo." : "Haz clic para congelar. Mejora para arrastrar.";

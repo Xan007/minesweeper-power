@@ -11,7 +11,8 @@
   <link rel="stylesheet" href="css/layout.css?v=stable-19">
   <link rel="stylesheet" href="css/board.css?v=power-18">
   <link rel="stylesheet" href="css/powers.css?v=stable-19">
-  <link rel="stylesheet" href="css/progression.css?v=stable-19">
+  <link rel="stylesheet" href="css/progression.css?v=ux-20">
+  <link rel="stylesheet" href="css/experience.css?v=ux-20">
 </head>
 <body>
   <svg class="svg-sprite" aria-hidden="true" focusable="false">
@@ -390,7 +391,7 @@
                 Generar tablero
               </button>
             </div>
-            <p class="custom-hint" id="customHint">Entre 5 y 40 columnas · entre 5 y 24 filas.</p>
+            <p class="custom-hint" id="customHint">Ancho: 5–40 · alto: 5–24.</p>
           </div>
 
           <div class="game-panel">
@@ -675,7 +676,7 @@
       <span>Buscaminas Power · Edición clásica</span>
       <span class="footer-sep"></span>
       <span>5 poderes · bots · récords locales</span>
-      <span class="footer-right">Hecho para sobrevivir al campo minado.</span>
+      <span class="footer-right">Progreso guardado en este navegador.</span>
     </footer>
   </div>
 
@@ -730,11 +731,11 @@
       <div class="help-powers">
         <h3><span class="help-num">03</span> Arsenal</h3>
         <div class="help-power-grid">
-          <article><svg class="icon"><use href="#i-target"></use></svg><div><h4>Consejero · 3 usos</h4><p>Señala una jugada deducida de las pistas visibles. Revisa las banderas incorrectas y espera a que se derrita el hielo; si no encuentra una jugada segura, no consume carga. Compra más pistas en Cuartel → Mejoras.</p></div></article>
-          <article><svg class="icon"><use href="#i-eye"></use></svg><div><h4>Visión X</h4><p>Durante 6 s, apunta a una celda para ver su contenido. En móvil, tócala para inspeccionarla sin abrirla.</p></div></article>
+          <article><svg class="icon"><use href="#i-target"></use></svg><div><h4>Consejero</h4><p>Señala una jugada segura. Si no encuentra ninguna, no gasta una pista.</p></div></article>
+          <article><svg class="icon"><use href="#i-eye"></use></svg><div><h4>Visión X</h4><p>Mueve el cursor o desliza sobre el tablero para inspeccionar celdas.</p></div></article>
           <article><svg class="icon"><use href="#i-tool"></use></svg><div><h4>Kit de desarme</h4><p>Si pisas una mina, pulsa <b>Espacio</b> o haz clic cuando la aguja cruce la sección blanca.</p></div></article>
           <article><svg class="icon"><use href="#i-shield"></use></svg><div><h4>Inmortalidad</h4><p>Protege durante 6 clics y neutraliza las minas que pises. Las mejoras amplían su duración.</p></div></article>
-          <article><svg class="icon"><use href="#i-snow"></use></svg><div><h4>Cañón criogénico</h4><p>Congela durante 3 s y rompe el hielo con el martillo. Mejora el alcance en el cuartel.</p></div></article>
+          <article><svg class="icon"><use href="#i-snow"></use></svg><div><h4>Cañón criogénico</h4><p>Congela celdas durante 3 s y rompe el hielo. Mejora el alcance y desbloquea el arrastre en el cuartel.</p></div></article>
         </div>
       </div>
 
@@ -766,7 +767,7 @@
       <div class="modal-head">
         <p class="kicker">ARCHIVO DE OPERACIONES</p>
         <h2 id="recordsTitle">Récords e historial</h2>
-        <p class="modal-sub">Tus partidas se guardan en este navegador. Sin cuentas, sin nubes, sin excusas.</p>
+        <p class="modal-sub">Tus partidas se guardan en este navegador.</p>
       </div>
 
       <div class="records-summary" id="recordsSummary"></div>
@@ -807,11 +808,11 @@
           <strong id="hqCoins">0</strong>
         </div>
         <div class="hq-stat">
-          <span>ESCUADRÓN</span>
+          <span>BOTS</span>
           <strong id="hqBots">0/1</strong>
         </div>
         <div class="hq-stat">
-          <span>PROCESOS</span>
+          <span>TRABAJANDO</span>
           <strong id="hqConcurrency">0/1</strong>
         </div>
         <div class="hq-stat">
@@ -875,7 +876,7 @@
           <div class="hq-panel-head">
             <div>
               <h3>Mejoras globales</h3>
-              <p>Inversiones permanentes para potenciar a todo el escuadrón.</p>
+              <p>Mejoras permanentes para tus bots y tu partida.</p>
             </div>
           </div>
           <div class="upgrade-grid" id="hqUpgradeList"></div>
@@ -885,7 +886,7 @@
           <div class="hq-panel-head">
             <div>
               <h3>Habilidades</h3>
-              <p>Mejora poderes para tu arsenal y las cargas de tus bots.</p>
+              <p>Tus mejoras se aplican en la siguiente partida. Equípalas a tus bots desde su tarjeta.</p>
             </div>
           </div>
           <div class="skill-grid" id="hqSkillList"></div>
@@ -985,7 +986,7 @@
 
   <script src="js/utils.js?v=classic-4" defer></script>
   <script src="js/config.js?v=classic-10" defer></script>
-  <script src="js/progression.js?v=power-18" defer></script>
+  <script src="js/progression.js?v=ux-20" defer></script>
   <script src="js/components/contracts.js?v=turbo-13" defer></script>
   <script src="js/components/extractor.js?v=turbo-13" defer></script>
   <script src="js/storage.js?v=mobile-11" defer></script>
@@ -996,10 +997,10 @@
   <script src="js/components/bot-brain.js?v=human-15" defer></script>
   <script src="js/components/bot-runner.js?v=human-15" defer></script>
   <script src="js/bots.js?v=balance-14" defer></script>
-  <script src="js/game.js?v=stable-19" defer></script>
-  <script src="js/components/modals.js?v=stable-19" defer></script>
-  <script src="js/components/board-view.js?v=stable-19" defer></script>
-  <script src="js/components/hq.js?v=stable-19" defer></script>
+  <script src="js/game.js?v=ux-20" defer></script>
+  <script src="js/components/modals.js?v=ux-20" defer></script>
+  <script src="js/components/board-view.js?v=ux-20" defer></script>
+  <script src="js/components/hq.js?v=ux-20" defer></script>
   <script src="js/components/spectator.js?v=readable-17" defer></script>
   <script src="js/ui.js?v=readable-17" defer></script>
   <script src="js/app.js?v=stable-19" defer></script>

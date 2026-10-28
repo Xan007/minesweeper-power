@@ -169,7 +169,7 @@
             const cls = ["bot-skill-chip", equipped ? "is-equipped" : "", !unlocked ? "is-locked" : ""].filter(Boolean).join(" ");
             const title = !unlocked ? "Bloqueado: sube de nivel esta habilidad primero" : (equipped ? `Equipado (${charges} cargas/tablero). Clic para quitar.` : `Desactivado. Clic para equipar (${charges} cargas).`);
             return `
-              <button class="${cls}" type="button" data-hq-action="toggle-skill" data-bot="${U.escapeHtml(bot.id)}" data-skill="${id}" title="${U.escapeHtml(title)}">
+              <button class="${cls}" type="button" aria-pressed="${equipped}" data-hq-action="toggle-skill" data-bot="${U.escapeHtml(bot.id)}" data-skill="${id}" title="${U.escapeHtml(title)}">
                 ${U.icon(def.icon)}
                 <span>${def.short}</span>
               </button>
@@ -252,86 +252,66 @@
       if (!this.hqUpgradeList || !this.store) return;
       const state = this.store.progression;
       const P = BP.Progression;
-
-      this.hqUpgradeList.innerHTML = Object.keys(P.UPGRADE_DEFS)
-        .map((id) => {
-          const def = P.UPGRADE_DEFS[id];
-          const level = state.upgrades[id] || 0;
-          const maxed = level >= def.maxLevel;
-          const cost = P.upgradeCost(id, level);
-          const canAfford = !maxed && state.coins >= cost;
-          let levelPips = "";
-          for (let i = 0; i < def.maxLevel; i += 1) {
-            levelPips += `<i class="${i < level ? "is-filled" : ""}"></i>`;
-          }
-
-          return `
-            <div class="upgrade-card ${maxed ? "is-maxed" : ""}">
-              <div class="upgrade-icon">${U.icon(def.icon)}</div>
-              <div class="upgrade-body">
-                <div class="upgrade-top">
-                  <h4>${U.escapeHtml(def.name)}</h4>
-                  <span class="upgrade-level">Nivel ${level}/${def.maxLevel}</span>
-                </div>
-                <p class="upgrade-desc">${U.escapeHtml(def.description)}</p>
-                <div class="upgrade-meter">${levelPips}</div>
-                <div class="upgrade-effect">
-                  <span>Actual: <b>${def.effect(level)}</b></span>
-                  ${!maxed ? `<span>Siguiente: <b>${def.next(level)}</b></span>` : '<span class="is-cap">Nivel máximo alcanzado</span>'}
-                </div>
-              </div>
-              <div class="upgrade-action">
-                ${maxed
-                  ? '<span class="max-badge">MAX</span>'
-                  : `<button class="primary-btn primary-btn--small" type="button" data-hq-action="buy-upgrade" data-id="${id}" ${!canAfford ? "disabled" : ""}>
-                      Mejorar ${P.formatCoins(cost)} <svg class="icon"><use href="#i-coin"></use></svg>
-                    </button>`}
-              </div>
+      const groups = [
+        { title: "Equipo de bots", ids: ["capacity", "concurrency", "speed", "intelligence"] },
+        { title: "Tu partida", ids: ["salvage", "advisor"] },
+      ];
+      const card = (id) => {
+        const def = P.UPGRADE_DEFS[id];
+        const level = state.upgrades[id] || 0;
+        const maxed = level >= def.maxLevel;
+        const cost = P.upgradeCost(id, level);
+        const missing = maxed ? 0 : Math.max(0, cost - state.coins);
+        return `
+          <article class="upgrade-card ${maxed ? "is-maxed" : ""}">
+            <div class="store-card-head"><span class="upgrade-icon">${U.icon(def.icon)}</span>
+              <div><h4>${U.escapeHtml(def.name)}</h4><span class="store-level">Nivel ${level} de ${def.maxLevel}</span></div>
             </div>
-          `;
-        })
-        .join("");
+            <p class="store-description">${U.escapeHtml(def.description)}</p>
+            <div class="store-comparison"><div><span>Ahora</span><strong>${def.effect(level)}</strong></div>
+              <div><span>${maxed ? "Estado" : "Al mejorar"}</span><strong>${maxed ? "Nivel máximo" : def.next(level)}</strong></div></div>
+            <div class="store-card-action">${maxed ? '<span class="store-complete">Completado</span>' : `
+              <button class="primary-btn" type="button" data-hq-action="buy-upgrade" data-id="${id}" ${missing ? "disabled" : ""}>
+                Mejorar · ${P.formatCoins(cost)} monedas</button>
+              ${missing ? `<small>Te faltan ${P.formatCoins(missing)} monedas</small>` : ""}`}
+            </div>
+          </article>`;
+      };
+      this.hqUpgradeList.innerHTML = groups.map((group) => `
+        <section class="store-group"><h4 class="store-group-title">${group.title}</h4>
+          <div class="store-grid">${group.ids.map(card).join("")}</div></section>`).join("");
     }
 
     renderHqSkills() {
       if (!this.hqSkillList || !this.store) return;
       const state = this.store.progression;
       const P = BP.Progression;
-
+      const descriptions = {
+        xray: "Inspecciona celdas ocultas sin abrirlas.",
+        defuse: "Detén la aguja para neutralizar una mina.",
+        immortal: "Protege tus clics y neutraliza las minas que pises.",
+        freeze: "Congela celdas y rómpelas con el martillo.",
+      };
       this.hqSkillList.innerHTML = P.SKILL_IDS.map((id) => {
         const def = P.SKILL_DEFS[id];
         const level = state.skills[id] || 0;
         const maxed = level >= def.maxLevel;
         const cost = P.skillCost(id, level);
-        const canAfford = !maxed && state.coins >= cost;
-        let levelPips = "";
-        for (let i = 0; i < def.maxLevel; i += 1) {
-          levelPips += `<i class="${i < level ? "is-filled" : ""}"></i>`;
-        }
-
+        const missing = maxed ? 0 : Math.max(0, cost - state.coins);
         return `
-          <div class="skill-card ${maxed ? "is-maxed" : ""}">
-            <div class="skill-card-head">
-              <span class="skill-icon">${U.icon(def.icon)}</span>
-              <div>
-                <h4>${U.escapeHtml(def.name)}</h4>
-                <span class="skill-level">${level === 0 ? "Bloqueado" : `Nivel ${level}/${def.maxLevel}`}</span>
-              </div>
+          <article class="skill-card ${maxed ? "is-maxed" : ""}">
+            <div class="store-card-head"><span class="skill-icon">${U.icon(def.icon)}</span>
+              <div><h4>${U.escapeHtml(def.name)}</h4><span class="store-level">Nivel ${level} de ${def.maxLevel}</span></div></div>
+            <p class="store-description">${descriptions[id]}</p>
+            <div class="store-comparison"><div><span>En tu partida</span><strong>${def.manual(level)}</strong></div>
+              <div><span>${maxed ? "Para bots" : "Al mejorar tu partida"}</span><strong>${maxed ? def.bot(level) : def.manual(level + 1)}</strong></div></div>
+            <p class="store-bot-effect">Bots: ${level === 0 ? "mejora para equipar" : def.bot(level)}</p>
+            <div class="store-card-action">${maxed ? '<span class="store-complete">Nivel máximo</span>' : `
+              <button class="primary-btn" type="button" data-hq-action="buy-skill" data-id="${id}" ${missing ? "disabled" : ""}>
+                Mejorar · ${P.formatCoins(cost)} monedas</button>
+              ${missing ? `<small>Te faltan ${P.formatCoins(missing)} monedas</small>` : ""}`}
             </div>
-            <div class="upgrade-meter">${levelPips}</div>
-            <div class="skill-perks">
-              <p><b>Manual:</b> ${def.manual(Math.max(1, level))}</p>
-              <p><b>Bot:</b> ${level === 0 ? "Bloqueado para bots" : def.bot(level)}</p>
-            </div>
-            <div class="skill-action">
-              ${maxed
-                ? '<span class="max-badge">MAX</span>'
-                : `<button class="primary-btn primary-btn--small" type="button" data-hq-action="buy-skill" data-id="${id}" ${!canAfford ? "disabled" : ""}>
-                    ${level === 0 ? "Desbloquear" : "Mejorar"} ${P.formatCoins(cost)} <svg class="icon"><use href="#i-coin"></use></svg>
-                  </button>`}
-            </div>
-          </div>
-        `;
+          </article>`;
       }).join("");
     }
 
@@ -426,6 +406,8 @@
       this.ui.toast(`${def.name} subió al nivel ${result.level}.`, "success", 3000);
       this.ui.refreshProgression();
       this.renderHqUpgrades();
+      const next = this.hqUpgradeList.querySelector(`[data-hq-action="buy-upgrade"][data-id="${id}"]`);
+      if (next && !next.disabled) next.focus();
     }
 
     handleBuySkill(id) {
@@ -439,9 +421,11 @@
       }
       this.sound.play("coin");
       const def = BP.Progression.SKILL_DEFS[id];
-      this.ui.toast(`${def.name} subió al nivel ${result.level}.`, "success", 3000);
+      this.ui.toast(`${def.name}: nivel ${result.level}. Se aplica en la siguiente partida.`, "success", 3500);
       this.ui.refreshProgression();
       this.renderHqSkills();
+      const next = this.hqSkillList.querySelector(`[data-hq-action="buy-skill"][data-id="${id}"]`);
+      if (next && !next.disabled) next.focus();
     }
 
     handleToggleBotSkill(botId, skillId) {
@@ -462,6 +446,8 @@
       );
       this.ui.refreshProgression();
       this.renderHqBots();
+      const next = this.hqBotList.querySelector(`[data-hq-action="toggle-skill"][data-bot="${botId}"][data-skill="${skillId}"]`);
+      if (next) next.focus();
       this.ui.renderSpectator(true);
     }
   }

@@ -637,3 +637,14 @@ test("la sacudida no transforma el tablero ni los avisos", () => {
     global.document = oldDoc; global.addEventListener = oldListen; global.matchMedia = oldMatch; BP.FX.prototype.resize = oldResize;
   }
 });
+
+test("la tienda compara habilidades reales del nivel inicial con su mejora", () => {
+  require("../js/components/hq.js");
+  const hq = Object.create(BP.HqComponent.prototype);
+  hq.store = { progression: BP.Progression.createState() };
+  hq.hqSkillList = { innerHTML: "" };
+  hq.renderHqSkills();
+  assert.match(hq.hqSkillList.innerHTML, /3 cargas \u00b7 1x1 \u00b7 3 s \u00b7 clic/);
+  assert.match(hq.hqSkillList.innerHTML, /3 cargas \u00b7 2x2 \u00b7 3 s \u00b7 arrastre/);
+  assert.match(hq.hqSkillList.innerHTML, /Te faltan 45 monedas/);
+});

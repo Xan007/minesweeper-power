@@ -119,7 +119,7 @@
       const focusables = $$(
         'button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), [tabindex]:not([tabindex="-1"])',
         this.activeModal
-      );
+      ).filter((element) => !element.closest("[hidden]") && element.getClientRects().length > 0);
       if (focusables.length === 0) return;
       const first = focusables[0];
       const last = focusables[focusables.length - 1];

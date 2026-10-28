@@ -1,0 +1,81 @@
+/* Interfaz clasica: bordes de ventana, acciones claras y lectura comoda. */
+:root { --ui-ink: #18232e; --ui-muted: #46515c; --ui-surface: #e4e3df; --ui-blue: #000080; }
+body { font-size: 13px; color: var(--ui-ink); }
+:focus-visible { outline: 2px dotted #000080; outline-offset: 2px; }
+.topbar { min-height: 34px; }
+.view-switcher { gap: 4px; }
+.view-tab { min-height: 36px; padding-inline: 14px; font-size: 12px; }
+.view-tab.is-active { min-height: 38px; }
+.toolbar { gap: 8px; }
+.diff-btn, .toolbar-actions .chip-btn { min-height: 32px; font-size: 12px; }
+.panel-head h2, .hq-panel-head h3 { font-size: 14px; }
+.panel-sub, .hq-panel-head p, .hq-limit { font-size: 12px; color: var(--ui-muted); }
+.power-list { gap: 5px; }
+.power-card { min-height: 53px; }
+.power-name { font-size: 12px; }
+.power-state { font-size: 11px; }
+.power-desc { line-height: 1.35; }
+.hud { padding-block: 6px 18px; }
+.status-bar { min-height: 30px; padding: 5px 8px; font-size: 12px; }
+.modal-card { padding: 10px; }
+.modal-head { margin-bottom: 10px; }
+.modal-head h2 { font-size: 16px; }
+.modal-sub { font-size: 12px; }
+.modal-card--hq { width: min(100%, 1020px); }
+.hq-summary { gap: 6px; }
+.hq-stat { padding: 7px 9px; }
+.hq-stat span { font-size: 11px; }
+.hq-stat strong { font-size: 16px; }
+.hq-tabs { gap: 4px; padding: 4px; }
+.hq-tab { min-height: 34px; padding-inline: 12px; font-size: 12px; }
+.hq-tab.is-active { color: #000080; background: #f0f0ed; }
+.hq-panel-head { align-items: center; margin-bottom: 10px; }
+.hq-panel-head h3 { margin-bottom: 3px; }
+.hq-limit { padding: 7px 9px; }
+.upgrade-grid { display: flex; flex-direction: column; gap: 18px; }
+.store-group { min-width: 0; }
+.store-group-title { margin: 0 0 7px; color: #000080; font-size: 13px; }
+.store-grid, .skill-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 9px; }
+.upgrade-card, .skill-card { min-width: 0; padding: 12px; gap: 10px; background: #dededb; }
+.store-card-head { display: flex; align-items: center; gap: 9px; }
+.store-card-head h4 { font-size: 14px; line-height: 1.3; }
+.store-card-head .upgrade-icon, .store-card-head .skill-icon { width: 34px; height: 34px; flex: none; font-size: 17px; }
+.store-level { display: block; margin-top: 2px; color: var(--ui-muted); font-size: 12px; }
+.store-description, .store-bot-effect { min-width: 0; color: var(--ui-muted); font-size: 12px; line-height: 1.4; }
+.store-comparison { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 6px; }
+.store-comparison > div { min-width: 0; padding: 7px 8px; border: 1px solid #a3a3a0; background: #ececea; }
+.store-comparison span { display: block; margin-bottom: 3px; color: var(--ui-muted); font-size: 11px; }
+.store-comparison strong { display: block; font-size: 12px; line-height: 1.35; overflow-wrap: anywhere; }
+.store-comparison > div:last-child strong { color: #000080; }
+.store-card-action { display: flex; flex-direction: column; align-items: flex-start; gap: 5px; margin-top: auto; }
+.store-card-action button { min-height: 36px; padding-inline: 12px; font-size: 12px; }
+.store-card-action small { color: #704000; font-size: 11px; }
+.store-complete { color: #005b18; font-size: 12px; font-weight: 700; }
+.spec-mode-btn, .spectator-toolbar-actions .chip-btn, .spec-chip-btn { font-size: 12px; }
+.extractor-copy strong { font-size: 13px; }
+.extractor-copy span, .extractor-charge { font-size: 12px; }
+.spectator-board-head h3, .spec-card-name { font-size: 13px; }
+.spectator-board-foot, .spec-card-bar-info, .spec-card-thought, .thought-bubble p { font-size: 12px; }
+.help-block, .help-powers article, .help-progression p { line-height: 1.45; }
+.help-powers p, .help-progression p, .history-list, .records-summary { font-size: 12px; }
+@media (max-width: 760px) {
+  .topbar { min-height: 42px; }
+  .top-actions .icon-btn, .top-actions .ghost-btn { width: 38px; height: 38px; min-height: 38px; }
+  .top-actions .coin-chip { min-height: 38px; }
+  .view-tab, .view-tab.is-active { min-height: 44px; }
+  .store-grid, .skill-grid { grid-template-columns: minmax(0, 1fr); }
+  .store-card-action button { width: 100%; min-height: 44px; }
+  .hq-tab { min-height: 44px; }
+  .hq-panel-head { gap: 8px; }
+  .hq-panel-head button { min-height: 44px; }
+  .power-card { min-height: 56px; }
+  .power-name, .power-state { font-size: 12px; }
+  .spec-card-action-btn, .spec-card-diff-select { min-height: 44px; }
+}
+@media (max-width: 380px) {
+  .top-actions .icon-btn, .top-actions .ghost-btn { width: 34px; }
+  .store-comparison { grid-template-columns: minmax(0, 1fr); }
+}
+
+.power-desc { position: static; width: auto; height: auto; overflow: visible; clip-path: none; white-space: normal; color: #38414a; font-size: 11px; }
+.skill-icon { color: #000080; }

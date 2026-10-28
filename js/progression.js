@@ -68,7 +68,7 @@
       baseCost: 55,
       growth: 2.0,
       description: "Más espacio para contratar y mantener bots.",
-      effect: (level) => `${1 + level} bots contratables`,
+      effect: (level) => `${1 + level} ${level === 0 ? "bot contratable" : "bots contratables"}`,
       next: (level) => `${2 + level} bots contratables`,
     },
     concurrency: {
@@ -80,7 +80,7 @@
       baseCost: 65,
       growth: 2.1,
       description: "Cada nivel permite que un bot más trabaje a la vez.",
-      effect: (level) => `${1 + level} bots simultáneos`,
+      effect: (level) => `${1 + level} ${level === 0 ? "bot simultáneo" : "bots simultáneos"}`,
       next: (level) => `${2 + level} bots simultáneos`,
     },
     speed: {
