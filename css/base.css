@@ -1,0 +1,368 @@
+/* ============================================================
+   BUSCAMINAS POWER · base clásica (Windows 98/2000)
+   ============================================================ */
+
+:root {
+  --desktop: #008080;
+  --face: #c0c0c0;
+  --face-light: #dfdfdf;
+  --white: #ffffff;
+  --shadow: #808080;
+  --dark: #404040;
+  --black: #000000;
+  --text: #000000;
+  --muted: #404040;
+  --muted-2: #666666;
+  --title: #000080;
+  --title-2: #1084d0;
+  --led: #ff0000;
+  --led-bg: #000000;
+
+  --cyan: #000080;
+  --cyan-soft: #000080;
+  --violet: #800080;
+  --magenta: #ff0000;
+  --amber: #808000;
+  --mint: #008000;
+  --red: #ff0000;
+  --blue: #0000ff;
+
+  --font-display: "Segoe UI", Tahoma, -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+  --font-body: "Segoe UI", Tahoma, -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+
+  --radius-sm: 0;
+  --radius-md: 0;
+  --radius-lg: 0;
+  --radius-xl: 0;
+  --shadow-panel: none;
+  --ease-out: ease;
+  --ease-in-out: ease;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  min-height: 100%;
+  color-scheme: light;
+  scrollbar-color: var(--face) var(--face-light);
+}
+
+body {
+  margin: 0;
+  min-height: 100dvh;
+  background: var(--desktop);
+  color: var(--text);
+  font-family: var(--font-body);
+  font-size: 12px;
+  line-height: 1.35;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+  overflow-x: hidden;
+}
+
+button,
+input,
+select {
+  font: inherit;
+  color: inherit;
+}
+
+button {
+  border: 0;
+  background: none;
+  cursor: pointer;
+}
+
+button:disabled {
+  cursor: not-allowed;
+  color: var(--shadow);
+  text-shadow: 1px 1px 0 var(--white);
+}
+
+h1,
+h2,
+h3,
+h4,
+p {
+  margin: 0;
+}
+
+h1,
+h2,
+h3,
+h4 {
+  font-family: var(--font-display);
+  font-weight: 700;
+  letter-spacing: 0;
+  line-height: 1.25;
+}
+
+ul {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+kbd {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 16px;
+  height: 16px;
+  padding: 0 3px;
+  border: 1px solid;
+  border-color: var(--white) var(--dark) var(--dark) var(--white);
+  border-radius: 0;
+  background: var(--face);
+  box-shadow: 1px 1px 0 var(--black);
+  color: var(--black);
+  font-family: var(--font-body);
+  font-size: 11px;
+  font-weight: 400;
+  line-height: 1;
+  white-space: nowrap;
+}
+
+.icon {
+  width: 1em;
+  height: 1em;
+  flex: none;
+  fill: currentColor;
+  overflow: visible;
+}
+
+.svg-sprite {
+  position: absolute;
+  width: 0;
+  height: 0;
+  overflow: hidden;
+}
+
+::selection {
+  background: var(--title);
+  color: var(--white);
+}
+
+:focus-visible {
+  outline: 1px dotted var(--black);
+  outline-offset: -4px;
+}
+
+[hidden] {
+  display: none !important;
+}
+
+body.modal-open,
+body.is-defusing {
+  overflow: hidden;
+}
+
+/* La decoración moderna ya no forma parte del proyecto. */
+.bg {
+  display: none;
+}
+
+/* ---------- textos compartidos ---------- */
+
+.eyebrow,
+.kicker {
+  margin: 0;
+  color: var(--muted);
+  font-family: var(--font-display);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.kicker {
+  color: var(--muted-2);
+}
+
+/* ---------- botones clásicos ---------- */
+
+.icon-btn,
+.ghost-btn,
+.primary-btn,
+.chip-btn,
+.coin-chip {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  min-height: 24px;
+  padding: 0 8px;
+  border: 2px solid;
+  border-color: var(--white) var(--dark) var(--dark) var(--white);
+  border-radius: 0;
+  background: var(--face);
+  box-shadow: 1px 1px 0 var(--black);
+  color: var(--black);
+  font-family: var(--font-body);
+  font-size: 11px;
+  font-weight: 400;
+  letter-spacing: 0;
+  text-transform: none;
+  transition: none;
+}
+
+.icon-btn:hover,
+.ghost-btn:hover,
+.primary-btn:hover,
+.chip-btn:hover,
+.coin-chip:hover {
+  background: #d4d4d4;
+}
+
+.icon-btn:active,
+.ghost-btn:active,
+.primary-btn:active,
+.chip-btn:active,
+.coin-chip:active {
+  border-color: var(--dark) var(--white) var(--white) var(--dark);
+  box-shadow: 1px 1px 0 var(--white) inset;
+  transform: translate(1px, 1px);
+}
+
+.icon-btn {
+  width: 24px;
+  height: 24px;
+  padding: 0;
+  font-size: 13px;
+}
+
+.ghost-btn {
+  min-height: 24px;
+}
+
+.primary-btn {
+  min-height: 26px;
+  padding: 0 12px;
+  font-weight: 700;
+}
+
+.primary-btn--small {
+  min-height: 22px;
+  padding: 0 8px;
+  font-size: 10px;
+}
+
+.chip-btn {
+  min-height: 24px;
+  padding: 0 8px;
+  font-size: 10px;
+}
+
+.ghost-btn--wide {
+  width: 100%;
+}
+
+.icon-btn .icon,
+.ghost-btn .icon,
+.primary-btn .icon,
+.chip-btn .icon,
+.coin-chip .icon {
+  font-size: 12px;
+}
+
+.icon-btn[aria-pressed="false"] {
+  color: var(--shadow);
+}
+
+.text-btn {
+  padding: 2px 0;
+  color: var(--title);
+  font-family: var(--font-body);
+  font-size: 10px;
+  font-weight: 400;
+  letter-spacing: 0;
+  text-decoration: underline;
+  text-transform: none;
+}
+
+.text-btn:hover {
+  color: var(--blue);
+}
+
+.text-btn--danger {
+  color: var(--red);
+}
+
+.text-btn.is-armed {
+  color: var(--red);
+  font-weight: 700;
+  text-shadow: none;
+}
+
+.mini-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  padding: 0;
+  color: var(--title);
+  font-family: var(--font-body);
+  font-size: 10px;
+  font-weight: 400;
+  letter-spacing: 0;
+  text-decoration: underline;
+  text-transform: none;
+}
+
+.mini-link .icon {
+  font-size: 10px;
+}
+
+.mini-link:hover {
+  color: var(--blue);
+}
+
+.mini-link:hover .icon {
+  transform: none;
+}
+
+/* ---------- barras de desplazamiento ---------- */
+
+* {
+  scrollbar-width: auto;
+  scrollbar-color: var(--face) var(--face-light);
+}
+
+*::-webkit-scrollbar {
+  width: 16px;
+  height: 16px;
+}
+
+*::-webkit-scrollbar-track {
+  background: var(--face-light);
+}
+
+*::-webkit-scrollbar-thumb {
+  border: 1px solid;
+  border-color: var(--white) var(--dark) var(--dark) var(--white);
+  border-radius: 0;
+  background: var(--face);
+}
+
+*::-webkit-scrollbar-thumb:hover {
+  background: #d4d4d4;
+}
+
+*::-webkit-scrollbar-corner {
+  background: var(--face-light);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    scroll-behavior: auto !important;
+    transition-duration: 0.001ms !important;
+  }
+}

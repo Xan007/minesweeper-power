@@ -1,0 +1,552 @@
+/* ============================================================
+   BUSCAMINAS POWER · tablero clásico, celdas y estados
+   ============================================================ */
+
+.board {
+  --cell: 28px;
+  --gap: 0px;
+  display: grid;
+  grid-template-columns: repeat(var(--cols, 9), var(--cell));
+  grid-auto-rows: var(--cell);
+  gap: var(--gap, 0px);
+  flex: none;
+  padding: 3px;
+  border: 2px solid;
+  border-color: var(--shadow) var(--white) var(--white) var(--shadow);
+  border-radius: 0;
+  background: var(--face);
+  box-shadow: none;
+}
+
+.cell {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: var(--cell);
+  height: var(--cell);
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: var(--face);
+  box-shadow:
+    inset 1px 1px 0 var(--white),
+    inset -1px -1px 0 var(--shadow);
+  color: var(--black);
+  cursor: pointer;
+  font-family: var(--font-body);
+  font-size: calc(var(--cell) * 0.52);
+  font-weight: 700;
+  line-height: 1;
+  overflow: hidden;
+  touch-action: manipulation;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+  transition: none;
+}
+
+.cell::before {
+  display: none;
+}
+
+.cell:hover:not(.is-revealed):not(.is-flagged) {
+  background: #d4d4d4;
+}
+
+.cell:active:not(.is-revealed) {
+  background: #b0b0b0;
+  box-shadow:
+    inset 1px 1px 0 var(--shadow),
+    inset -1px -1px 0 var(--white);
+}
+
+.cell:focus-visible {
+  z-index: 3;
+  outline: 1px dotted var(--black);
+  outline-offset: -4px;
+}
+
+/* ---------------- celda descubierta ---------------- */
+
+.cell.is-revealed {
+  background: var(--face);
+  box-shadow: inset 1px 1px 0 var(--shadow);
+  color: var(--black);
+  cursor: default;
+  animation: cellOpen 0.1s ease-out both;
+  animation-delay: var(--delay, 0ms);
+}
+
+.cell.is-number {
+  cursor: default;
+}
+
+.cell.is-number:hover {
+  background: var(--face);
+}
+
+.cell .num {
+  display: block;
+  color: var(--num-color, var(--black));
+  font-family: var(--font-body);
+  font-size: calc(var(--cell) * 0.56);
+  font-weight: 700;
+  line-height: 1;
+  text-shadow: none;
+}
+
+.cell[data-n="1"] { --num-color: #0000ff; }
+.cell[data-n="2"] { --num-color: #008000; }
+.cell[data-n="3"] { --num-color: #ff0000; }
+.cell[data-n="4"] { --num-color: #000080; }
+.cell[data-n="5"] { --num-color: #800000; }
+.cell[data-n="6"] { --num-color: #008080; }
+.cell[data-n="7"] { --num-color: #000000; }
+.cell[data-n="8"] { --num-color: #808080; }
+
+.cell .ico,
+.cell .icon {
+  width: 62%;
+  height: 62%;
+  fill: currentColor;
+  filter: none;
+}
+
+/* ---------------- bandera ---------------- */
+
+.cell.is-flagged {
+  background: var(--face);
+  box-shadow:
+    inset 1px 1px 0 var(--white),
+    inset -1px -1px 0 var(--shadow);
+  color: var(--red);
+  animation: flagIn 0.12s ease-out;
+}
+
+.cell.is-flagged:hover {
+  background: #d4d4d4;
+  filter: none;
+}
+
+.cell.is-flagged .ico,
+.cell.is-flagged .icon {
+  width: 58%;
+  height: 58%;
+  color: var(--red);
+  filter: none;
+}
+
+/* ---------------- minas ---------------- */
+
+.cell.is-mine-revealed {
+  background: var(--face);
+  box-shadow: inset 1px 1px 0 var(--shadow);
+  color: var(--black);
+}
+
+.cell.is-mine-revealed .ico,
+.cell.is-mine-revealed .icon {
+  width: 68%;
+  height: 68%;
+  filter: none;
+}
+
+.cell.is-exploded {
+  z-index: 3;
+  background: var(--red);
+  box-shadow:
+    inset 1px 1px 0 #ff8080,
+    inset -1px -1px 0 #800000;
+  color: var(--black);
+  animation: explodeCell 0.35s ease-out both;
+}
+
+.cell.is-exploded .ico,
+.cell.is-exploded .icon {
+  filter: none;
+}
+
+.cell.is-exploded::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: #ffff80;
+  pointer-events: none;
+  animation: explodeFlash 0.3s ease-out forwards;
+}
+
+/* ---------------- neutralizada / congelada ---------------- */
+
+.cell.is-defused {
+  background: var(--face);
+  box-shadow: inset 1px 1px 0 var(--shadow);
+  color: var(--title);
+  cursor: default;
+}
+
+.cell.is-defused .ico {
+  width: 60%;
+  height: 60%;
+  opacity: 1;
+  filter: none;
+}
+
+.cell-defused-tag {
+  position: absolute;
+  right: 1px;
+  bottom: 0;
+  color: var(--mint);
+  font-family: var(--font-body);
+  font-size: max(9px, calc(var(--cell) * 0.26));
+  font-weight: 700;
+  line-height: 1;
+  text-shadow: none;
+}
+
+.cell.is-frozen {
+  background: #c0ffff;
+  box-shadow:
+    inset 1px 1px 0 var(--white),
+    inset -1px -1px 0 var(--shadow);
+}
+
+.cell.is-frozen.is-revealed {
+  box-shadow: inset 1px 1px 0 var(--shadow);
+}
+
+.cell.is-frozen .num {
+  text-shadow: none;
+}
+
+.frozen-glyph {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--blue);
+  filter: none;
+  pointer-events: none;
+  animation: frozenPulse 2s ease-in-out infinite;
+}
+
+.frozen-glyph .icon {
+  width: 54%;
+  height: 54%;
+  opacity: 1;
+}
+
+.freeze-thaw {
+  position: absolute;
+  left: 14%;
+  right: 14%;
+  bottom: 2px;
+  z-index: 3;
+  height: max(3px, calc(var(--cell) * 0.08));
+  overflow: hidden;
+  border: 1px solid;
+  border-color: var(--shadow) var(--white) var(--white) var(--shadow);
+  border-radius: 0;
+  background: var(--white);
+  box-shadow: none;
+  pointer-events: none;
+}
+
+.freeze-thaw i {
+  display: block;
+  width: 100%;
+  height: 100%;
+  border-radius: 0;
+  background: var(--blue);
+  box-shadow: none;
+  transform-origin: left center;
+  transition: transform 0.12s linear;
+}
+
+.cell.is-frozen.is-thawing {
+  animation: thawShiver 0.5s ease-in-out infinite;
+}
+
+.cell.is-frozen.is-thawing .frozen-glyph {
+  opacity: 0.6;
+}
+
+.cell.is-icing {
+  pointer-events: none;
+}
+
+.cell.is-icing::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 5;
+  border-radius: 0;
+  background:
+    radial-gradient(circle at 24% 22%, #ffffff 0 1px, transparent 2px),
+    radial-gradient(circle at 68% 36%, #ffffff 0 1px, transparent 2px),
+    radial-gradient(circle at 42% 74%, #ffffff 0 1px, transparent 2px),
+    linear-gradient(160deg, #e0ffff, #80d0ff);
+  box-shadow: inset 0 0 0 1px #ffffff;
+  animation: iceIn 0.3s ease-out both;
+  animation-delay: var(--delay, 0ms);
+  pointer-events: none;
+}
+
+.cell.is-shattering {
+  animation: shatterOut 0.35s ease-in both;
+  pointer-events: none;
+}
+
+.cell.is-shattering::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(45deg, transparent 46%, #ffffff 48%, transparent 52%),
+    linear-gradient(-35deg, transparent 44%, #c0ffff 47%, transparent 51%);
+  animation: crackFlash 0.35s ease-out forwards;
+  pointer-events: none;
+}
+
+/* ---------------- bandera incorrecta ---------------- */
+
+.cell.is-wrong-flag {
+  background: #ffcccc;
+  box-shadow:
+    inset 1px 1px 0 var(--white),
+    inset -1px -1px 0 var(--shadow);
+  color: var(--red);
+  cursor: default;
+}
+
+.cell.is-wrong-flag .ico {
+  color: var(--red);
+  opacity: 0.8;
+}
+
+.wrong-x {
+  position: absolute;
+  z-index: 2;
+  color: var(--red);
+  font-family: var(--font-body);
+  font-size: calc(var(--cell) * 0.7);
+  font-weight: 700;
+  line-height: 1;
+  text-shadow: 1px 1px 0 var(--black);
+}
+
+/* ---------------- visión X ---------------- */
+
+.cell .peek {
+  position: absolute;
+  inset: 0;
+  z-index: 4;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 0;
+  background: #ffffcc;
+  box-shadow: inset 0 0 0 1px var(--black);
+  color: var(--black);
+  font-family: var(--font-body);
+  font-size: calc(var(--cell) * 0.54);
+  font-weight: 700;
+  line-height: 1;
+  text-shadow: none;
+  pointer-events: none;
+  animation: peekIn 0.1s ease-out both;
+}
+
+.cell .peek[data-kind="mine"] {
+  background: #ffcccc;
+  box-shadow: inset 0 0 0 1px var(--red);
+  color: var(--red);
+}
+
+.cell .peek[data-kind="mine"] .ico {
+  width: 64%;
+  height: 64%;
+}
+
+.cell .peek[data-kind="empty"] {
+  color: var(--shadow);
+  font-size: calc(var(--cell) * 0.34);
+  letter-spacing: 0.04em;
+}
+
+.cell.is-peek {
+  z-index: 3;
+}
+
+/* ---------------- modos de tablero ---------------- */
+
+.board-frame.is-xray {
+  outline: 2px solid var(--title);
+  outline-offset: -4px;
+}
+
+.board-frame.is-xray .board-viewport,
+body.is-xray .board {
+  cursor: crosshair;
+}
+
+.board-frame.is-freeze-targeting {
+  outline: 2px solid var(--blue);
+  outline-offset: -4px;
+}
+
+.board-frame.is-freeze-targeting .cell {
+  cursor: crosshair;
+}
+
+.board-frame.is-freeze-targeting .cell:hover {
+  background: #c0ffff;
+}
+
+.board-frame.is-freeze-holding {
+  outline: 2px solid #00ffff;
+  outline-offset: -4px;
+}
+
+.board-frame.is-hammer-targeting {
+  outline: 2px solid var(--amber);
+  outline-offset: -4px;
+}
+
+.board-frame.is-hammer-targeting .cell {
+  cursor: crosshair;
+}
+
+.board-frame.is-hammer-targeting .cell.is-frozen {
+  cursor: pointer;
+}
+
+.board-frame.is-hammer-targeting .cell.is-frozen:hover,
+.cell.is-hammer-hover {
+  background: #ffffcc;
+  box-shadow:
+    inset 1px 1px 0 var(--white),
+    inset -1px -1px 0 var(--shadow);
+  transform: none;
+  z-index: 3;
+}
+
+.board.is-locked {
+  pointer-events: none;
+}
+
+/* ---------------- despeje con rueda / doble clic ---------------- */
+
+#board .cell.is-chord-source {
+  box-shadow:
+    inset 1px 1px 0 var(--shadow),
+    inset -1px -1px 0 var(--white);
+}
+
+#board .cell.is-chord-preview,
+#board .cell.is-chord-preview:hover {
+  z-index: 2;
+  background: #b0b0b0;
+  box-shadow:
+    inset 1px 1px 0 var(--shadow),
+    inset -1px -1px 0 var(--white);
+  filter: none;
+  transform: none;
+}
+
+/* ---------------- zona de congelación ---------------- */
+
+#board .cell.is-freeze-zone {
+  outline: 1px solid var(--blue);
+  outline-offset: -1px;
+  box-shadow:
+    inset 1px 1px 0 var(--white),
+    inset -1px -1px 0 var(--shadow);
+}
+
+#board .cell.is-freeze-zone:not(.is-revealed) {
+  background: #c0ffff;
+}
+
+/* ---------------- efectos globales ---------------- */
+
+body.is-xray .topbar,
+body.is-xray .sidebar {
+  filter: none;
+}
+
+body.screen-shake .app {
+  animation: screenShake 0.35s ease both;
+}
+
+body.freeze-flash .screen-flash {
+  background: #c0ffff;
+  animation: freezeFlash 0.45s ease-out both;
+}
+
+/* ---------------- animaciones ---------------- */
+
+@keyframes cellOpen {
+  from { opacity: 0.6; }
+  to { opacity: 1; }
+}
+
+@keyframes flagIn {
+  0% { transform: scale(0.85); }
+  100% { transform: scale(1); }
+}
+
+@keyframes peekIn {
+  from { opacity: 0.6; }
+  to { opacity: 1; }
+}
+
+@keyframes explodeCell {
+  0% { transform: scale(1); }
+  35% { transform: scale(1.1); }
+  100% { transform: scale(1); }
+}
+
+@keyframes explodeFlash {
+  from { opacity: 1; }
+  to { opacity: 0; }
+}
+
+@keyframes iceIn {
+  0% { opacity: 0; }
+  100% { opacity: 1; }
+}
+
+@keyframes shatterOut {
+  0% { opacity: 1; }
+  100% { opacity: 0.5; }
+}
+
+@keyframes crackFlash {
+  from { opacity: 1; }
+  to { opacity: 0; }
+}
+
+@keyframes screenShake {
+  0%, 100% { transform: translate3d(0, 0, 0); }
+  20% { transform: translate3d(-4px, 2px, 0); }
+  40% { transform: translate3d(4px, -2px, 0); }
+  60% { transform: translate3d(-3px, -1px, 0); }
+  80% { transform: translate3d(2px, 1px, 0); }
+}
+
+@keyframes freezeFlash {
+  0% { opacity: 0.45; }
+  100% { opacity: 0; }
+}
+
+@keyframes frozenPulse {
+  0%, 100% { opacity: 0.7; }
+  50% { opacity: 1; }
+}
+
+@keyframes thawShiver {
+  0%, 100% { filter: none; }
+  50% { filter: brightness(1.15); }
+}
