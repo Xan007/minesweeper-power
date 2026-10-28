@@ -549,3 +549,16 @@ test("el analisis sencillo y avanzado mantienen las deducciones basicas", () => 
     assert.ok(result.safe.some((cell) => cell.x === 0 && cell.y === 1));
   }
 });
+
+test("el tablero mantiene celdas legibles incluso cuando debe desplazarse", () => {
+  const view = Object.create(BP.BoardViewComponent.prototype);
+  let cell = "";
+  view.boardEl = { style: { getPropertyValue: () => "30", setProperty: (_name, value) => { cell = value; } } };
+  view.boardViewport = { clientWidth: 320 };
+  view.fitCellSize();
+  assert.equal(cell, "28px");
+  view.boardEl.style.getPropertyValue = () => "9";
+  view.boardViewport.clientWidth = 900;
+  view.fitCellSize();
+  assert.equal(cell, "48px");
+});

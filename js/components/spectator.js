@@ -89,6 +89,8 @@
       this.specHireCost = $("#specHireCost");
       this.specEmptyHireCost = $("#specEmptyHireCost");
       this.specHireBtn = $("#specHireBtn");
+      this.specHireLabel = $("#specHireLabel");
+      this.specHirePrice = $("#specHirePrice");
       this.specHireEmptyBtn = $("#specHireEmptyBtn");
       this.specHqBtn = $("#specHqBtn");
       this.specTurboControl = $("#specTurboControl");
@@ -138,13 +140,20 @@
       }
 
       if (this.specHireBtn) {
-        this.specHireBtn.addEventListener("click", () => this.ui.handleHire());
+        this.specHireBtn.addEventListener("click", () => {
+          const state = this.store.progression;
+          if (state.bots.length >= BP.Progression.maxBots(state)) {
+            this.ui.openHq("upgrades");
+            this.ui.toast("Mejora Capacidad para contratar más bots.", "info", 4000);
+          }
+          else this.ui.handleHire();
+        });
       }
       if (this.specHireEmptyBtn) {
         this.specHireEmptyBtn.addEventListener("click", () => this.ui.handleHire());
       }
       if (this.specHqBtn) {
-        this.specHqBtn.addEventListener("click", () => this.ui.openHq("upgrades"));
+        this.specHqBtn.addEventListener("click", () => this.ui.openHq("bots"));
       }
 
       if (this.specDiffSelect) {
@@ -435,8 +444,7 @@
         if (this.specBoard && runner.board) {
           const wrap = this.specBoardWrap;
           const maxW = wrap ? Math.max(280, wrap.clientWidth - 24) : 400;
-          const maxH = wrap ? Math.max(200, wrap.clientHeight - 24) : 320;
-          const fitCell = Math.max(16, Math.min(32, Math.floor(Math.min(maxW / runner.board.width, maxH / runner.board.height))));
+          const fitCell = Math.max(24, Math.min(42, Math.floor(maxW / runner.board.width)));
           this.paintBoardCells(this.specBoard, runner.board, runner.targetCell, fitCell);
         }
       }
@@ -461,6 +469,10 @@
       this.startLiveLoop();
 
       const cost = P.hireCost(bots.length);
+      const atCapacity = bots.length >= P.maxBots(state);
+      if (this.specHireLabel) this.specHireLabel.textContent = atCapacity ? "Contratar más bots" : "Contratar bot";
+      if (this.specHirePrice) this.specHirePrice.hidden = atCapacity;
+      if (this.specHireBtn) this.specHireBtn.title = atCapacity ? "Mejora la capacidad para contratar más bots" : "Contratar un bot";
       if (this.specHireCost) this.specHireCost.textContent = P.formatCoins(cost);
       if (this.specEmptyHireCost) this.specEmptyHireCost.textContent = P.formatCoins(cost);
 
@@ -778,8 +790,7 @@
       if (this.specBoard && runner && runner.board) {
         const wrap = this.specBoardWrap;
         const maxW = wrap ? Math.max(280, wrap.clientWidth - 24) : 400;
-        const maxH = wrap ? Math.max(200, wrap.clientHeight - 24) : 320;
-        const fitCell = Math.max(16, Math.min(32, Math.floor(Math.min(maxW / runner.board.width, maxH / runner.board.height))));
+        const fitCell = Math.max(24, Math.min(42, Math.floor(maxW / runner.board.width)));
         this.paintBoardCells(this.specBoard, runner.board, runner.targetCell, fitCell);
       }
     }
@@ -791,7 +802,7 @@
         currentCols !== String(board.width) ||
         currentRows !== String(board.height);
 
-      const cellSize = explicitCellSize || (board.width > 20 ? 10 : (board.width > 12 ? 14 : 19));
+      const cellSize = explicitCellSize || (board.width > 20 ? 24 : (board.width > 12 ? 26 : 32));
       container.style.setProperty("--cols", String(board.width));
       container.style.setProperty("--rows", String(board.height));
       container.style.setProperty("--cell", `${cellSize}px`);

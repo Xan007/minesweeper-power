@@ -2266,3 +2266,19 @@
   .spec-mode-btn, .spec-chip-btn, .spec-manage > summary, .spec-more > summary { min-height: 44px; }
   .spectator-board-wrap { min-height: 240px; max-height: 55vh; }
 }
+
+/* Acciones principales siempre visibles y tableros legibles. */
+.spectator-toolbar-actions { margin-left: auto; padding: 0; }
+.spectator-toolbar-actions .chip-btn { min-height: 32px; font-size: 12px; }
+body.is-spectating #viewTabPlay { color: #000080; background: #fff; border-bottom: 2px solid var(--dark); min-height: 34px; }
+.spec-card-board-wrap { min-height: 280px; max-height: 440px; justify-content: safe center; }
+.spectator-board-wrap { min-height: 390px; justify-content: safe center; }
+.spectator-board, .spec-mini-board { flex: none; }
+@media (max-width: 760px) {
+  .spectator-toolbar-actions { width: 100%; margin-left: 0; }
+  .spectator-toolbar-actions .chip-btn { flex: 1; justify-content: center; min-height: 44px; }
+  .spec-card-board-wrap { min-height: 270px; max-height: 55vh; }
+  .spectator-board-wrap { min-height: 300px; max-height: 55vh; }
+  .spec-card-head { flex-wrap: wrap; }
+  .spec-card-action-btn, .spec-card-diff-select { min-height: 40px; }
+}

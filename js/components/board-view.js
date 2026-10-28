@@ -339,14 +339,10 @@
     fitCellSize() {
       if (!this.boardEl || !this.boardViewport) return;
       const cols = Number(this.boardEl.style.getPropertyValue("--cols")) || 9;
-      const rows = Number(this.boardEl.style.getPropertyValue("--rows")) || 9;
-      const viewW = Math.max(260, this.boardViewport.clientWidth - 20);
-      const viewH = Math.max(220, this.boardViewport.clientHeight - 20);
-
-      const maxCell = cols > 20 ? 28 : (cols > 12 ? 32 : 36);
-      const minCell = window.matchMedia("(pointer: coarse)").matches ? 28 : 18;
-      const fitCell = Math.floor(Math.min(viewW / cols, viewH / rows));
-      const finalCell = U.clamp(fitCell, minCell, maxCell);
+      const viewW = Math.max(200, this.boardViewport.clientWidth - 20);
+      // En tableros grandes se conserva un tamaño legible y se permite desplazar el tablero.
+      const maxCell = cols > 20 ? 32 : (cols > 12 ? 40 : 48);
+      const finalCell = U.clamp(Math.floor(viewW / cols), 28, maxCell);
 
       this.boardEl.style.setProperty("--cell", `${finalCell}px`);
     }

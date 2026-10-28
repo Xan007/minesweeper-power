@@ -175,6 +175,8 @@
 
     switchView(view, botId = null) {
       document.body.classList.toggle("is-spectating", view === "spectator");
+      const playLabel = document.getElementById("viewPlayLabel");
+      if (playLabel) playLabel.textContent = view === "spectator" ? "Volver a mi partida" : "Mi partida";
       if (botId) {
         this.selectedBotId = botId;
         this.spectatorMode = "single";

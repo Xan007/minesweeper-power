@@ -103,7 +103,7 @@
       maxLevel: 6,
       baseCost: 35,
       growth: 1.65,
-      description: "Reduce errores y mejora la elecci?n de casillas de menor riesgo.",
+      description: "Reduce errores y mejora la elección de casillas de menor riesgo.",
       effect: (level) => `${Math.round(botAccuracy({ upgrades: { intelligence: level } }) * 100)}% de análisis`,
       next: (level) => `${Math.round(botAccuracy({ upgrades: { intelligence: level + 1 } }) * 100)}% de análisis`,
     },
