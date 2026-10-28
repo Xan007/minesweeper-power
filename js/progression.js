@@ -20,7 +20,7 @@
       maxLevel: 4,
       baseCost: 60,
       growth: 1.8,
-      manual: (level) => `${3 + level} usos · ${(6000 + level * 1500) / 1000} s · ${level >= 4 ? "3x3 nítida" : `2x2 · nitidez ${level}/4`}`,
+      manual: (level) => `${3 + level} usos · ${(6000 + level * 1500) / 1000} s · ${level >= 4 ? "3x3 nítida" : "2x2 · centro nítido"}`,
       bot: (level) => `${1 + level} escaneos por tablero`,
     },
     defuse: {

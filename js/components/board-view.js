@@ -141,6 +141,7 @@
           return;
         }
         if (event.button === 0 && this.xrayActive) {
+          this.xrayGesture = { x: event.clientX, y: event.clientY, moved: false };
           this.powerPointerId = event.pointerId;
           if (this.boardEl.setPointerCapture) this.boardEl.setPointerCapture(event.pointerId);
           return;
@@ -172,7 +173,22 @@
         this.cancelTouchTimer();
         this.clearChordPreview();
         if (this.powerPointerId != null && event.pointerId === this.powerPointerId) {
-          if (this.xrayActive) this.handleXrayPointerMove(event);
+          const gesture = this.xrayGesture;
+          const previousPeek = this.peekKey;
+          const hit = gesture && document.elementFromPoint ? document.elementFromPoint(event.clientX, event.clientY) : event.target;
+          const cellEl = hit && hit.closest(".cell");
+          if (gesture && this.xrayActive && cellEl && this.boardEl.contains(cellEl)) {
+            const x = Number(cellEl.dataset.x), y = Number(cellEl.dataset.y);
+            this.handleXrayPointerMove(event, cellEl);
+            const canOpen = !gesture.moved && (event.pointerType !== "touch" || previousPeek === `${x},${y}`);
+            if (canOpen) {
+              this.clearPeek();
+              if (event.pointerType === "touch" && this.touchMode === "flag") this.game.flag(x, y);
+              else this.game.reveal(x, y);
+              if (this.xrayActive && !this.game.defuseActive) this.handleXrayPointerMove(event, cellEl);
+            }
+          }
+          this.xrayGesture = null;
           this.powerPointerId = null;
           if (this.boardEl.releasePointerCapture && this.boardEl.hasPointerCapture(event.pointerId)) this.boardEl.releasePointerCapture(event.pointerId);
           return;
@@ -222,6 +238,7 @@
 
       this.boardEl.addEventListener("pointermove", (event) => {
         if (this.powerPointerId != null && event.pointerId === this.powerPointerId) {
+          if (this.xrayGesture && Math.hypot(event.clientX - this.xrayGesture.x, event.clientY - this.xrayGesture.y) > 10) this.xrayGesture.moved = true;
           const hit = document.elementFromPoint(event.clientX, event.clientY);
           const cell = hit && hit.closest(".cell");
           if (cell && this.boardEl.contains(cell)) {
@@ -270,6 +287,7 @@
 
       this.boardEl.addEventListener("pointercancel", () => {
         this.powerPointerId = null;
+        this.xrayGesture = null;
         this.cancelTouchTimer();
         this.touchStart = null;
         this.suppressClick = false;
@@ -281,6 +299,7 @@
       });
 
       this.boardEl.addEventListener("dblclick", (event) => {
+        if (this.xrayActive) { event.preventDefault(); return; }
         const cellEl = event.target.closest(".cell");
         if (!cellEl || !this.game) return;
         this.game.chord(Number(cellEl.dataset.x), Number(cellEl.dataset.y));
@@ -729,7 +748,7 @@
         const remaining = Math.max(0, this.xrayEndsAt - performance.now());
         const ratio = this.xrayDuration > 0 ? remaining / this.xrayDuration : 0;
         if (this.xrayCursor) this.xrayCursor.style.setProperty("--xray-progress", (ratio * 100).toFixed(1));
-        this.renderPowerTimer("xray", this.game.powers.xray.clarityLevel >= 4 ? "Visión X · nítida" : "Visión X · borrosa", "Mueve el cursor o desliza sobre el tablero", remaining, this.xrayDuration);
+        this.renderPowerTimer("xray", this.game.powers.xray.clarityLevel >= 4 ? "Visión X · 3x3" : "Visión X · centro nítido", "Apunta y haz clic · en móvil, toca dos veces", remaining, this.xrayDuration);
         const label = `${(remaining / 1000).toFixed(1)}s`;
         if (label !== this.xrayLastLabel) {
           this.xrayLastLabel = label;
@@ -817,7 +836,12 @@
         peek.className = "peek";
         const content = document.createElement("span");
         content.className = "peek-content";
-        if (nearby.mine) {
+        const focused = nearby.x === cell.x && nearby.y === cell.y;
+        if (focused) peek.classList.add("is-focus");
+        const obscured = !focused && this.game.powers.xray.clarityLevel < 4;
+        if (obscured) {
+          peek.dataset.kind = "obscured";
+        } else if (nearby.mine) {
           peek.dataset.kind = "mine";
           content.innerHTML = U.icon("i-bomb");
         } else if (nearby.adjacent > 0) {

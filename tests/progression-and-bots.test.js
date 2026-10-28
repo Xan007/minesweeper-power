@@ -524,7 +524,7 @@ test("mejorar habilidades amplia el hielo y la vision", () => {
   assert.ok(max.xray.duration > base.xray.duration);
   assert.deepEqual([base.xray.areaSize, medium.xray.areaSize, max.xray.areaSize], [2, 2, 3]);
   assert.equal(max.xray.clarityLevel, 4);
-  assert.match(p.SKILL_DEFS.xray.manual(3), /nitidez 3\/4/);
+  assert.match(p.SKILL_DEFS.xray.manual(3), /centro nítido/);
   assert.match(p.SKILL_DEFS.xray.manual(4), /3x3 nítida/);
 });
 
@@ -649,18 +649,60 @@ test("la tienda compara habilidades reales del nivel inicial con su mejora", () 
   assert.match(hq.hqSkillList.innerHTML, /Te faltan 45 monedas/);
 });
 
-test("la vision X con mouse inspecciona sin abrir una casilla", () => {
-  const handlers = {};
+test("la vision X permite abrir con mouse y evita abrir al arrastrar", () => {
+  const previous = global.document;
+  const handlers = {}, cell = { dataset: { x: "2", y: "3" } };
+  let reveals = 0, scans = 0;
   const view = Object.create(BP.BoardViewComponent.prototype);
-  const cell = { dataset: { x: "2", y: "3" } };
-  let scans = 0, reveals = 0;
   const game = { status: "playing", powers: { freeze: { targeting: false, hammerMode: false } }, reveal() { reveals += 1; } };
-  const boardEl = { addEventListener: (name, fn) => { handlers[name] = fn; }, setPointerCapture() {}, hasPointerCapture: () => true, releasePointerCapture() {} };
-  Object.assign(view, { ui: { game }, boardEl, xrayActive: true, powerPointerId: null, setFace() {}, cancelTouchTimer() {}, clearChordPreview() {}, handleXrayPointerMove() { scans += 1; } });
-  view.bindBoardEvents();
-  const event = { target: { closest: () => cell }, pointerType: "mouse", pointerId: 1, button: 0, clientX: 10, clientY: 10 };
-  handlers.pointerdown(event);
-  handlers.pointerup(event);
-  assert.equal(scans, 1);
-  assert.equal(reveals, 0);
+  const boardEl = { addEventListener: (name, fn) => { handlers[name] = fn; }, contains: () => true, setPointerCapture() {}, hasPointerCapture: () => true, releasePointerCapture() {} };
+  Object.assign(view, { ui: { game }, boardEl, xrayActive: true, powerPointerId: null, setFace() {}, cancelTouchTimer() {}, clearChordPreview() {}, clearPeek() {}, handleXrayPointerMove() { scans += 1; } });
+  global.document = { elementFromPoint: () => ({ closest: () => cell }) };
+  try {
+    view.bindBoardEvents();
+    const event = { target: { closest: () => cell }, pointerType: "mouse", pointerId: 1, button: 0, clientX: 10, clientY: 10 };
+    handlers.pointerdown(event); handlers.pointerup(event);
+    assert.equal(reveals, 1); assert.ok(scans > 0);
+    handlers.pointerdown(event); handlers.pointermove({ ...event, clientX: 40 }); handlers.pointerup({ ...event, clientX: 40 });
+    assert.equal(reveals, 1);
+  } finally { global.document = previous; }
+});
+
+test("vision X basica oculta por igual minas y casillas vecinas", () => {
+  const previous = global.document;
+  const makeNode = () => ({ dataset: {}, style: {}, children: [], classList: { add() {} }, appendChild(child) { this.children.push(child); }, setAttribute() {}, remove() {} });
+  try {
+    global.document = { createElement: makeNode };
+    const board = new BP.Board(2, 2, 1);
+    board.getCell(1, 0).mine = true;
+    board.getCell(0, 1).adjacent = 2;
+    const elements = Array.from({ length: 4 }, () => ({ ...makeNode(), offsetLeft: 0, offsetTop: 0, offsetWidth: 20, offsetHeight: 20 }));
+    const view = Object.create(BP.BoardViewComponent.prototype);
+    Object.assign(view, { ui: { game: { board, powers: { xray: { areaSize: 2, clarityLevel: 0 } } } }, boardEl: makeNode(), peekKey: null, lastPing: 0, sound: { play() {} }, clearPeek() {}, getCellElement(x, y) { return elements[y * 2 + x]; } });
+    view.showPeek(board.getCell(0, 0));
+    assert.equal(elements[0].children[0].dataset.kind, "empty");
+    for (const index of [1, 2, 3]) {
+      const peek = elements[index].children[0];
+      assert.equal(peek.dataset.kind, "obscured");
+      assert.equal(peek.children[0].innerHTML, undefined);
+      assert.equal(peek.children[0].textContent, undefined);
+    }
+  } finally { global.document = previous; }
+});
+
+test("en movil la vision X inspecciona al primer toque y abre al segundo", () => {
+  const previous = global.document, handlers = {};
+  const cell = { dataset: { x: "2", y: "3" } };
+  const view = Object.create(BP.BoardViewComponent.prototype);
+  let reveals = 0;
+  const game = { status: "playing", powers: { freeze: { targeting: false, hammerMode: false } }, reveal() { reveals += 1; } };
+  const boardEl = { addEventListener: (name, fn) => { handlers[name] = fn; }, contains: () => true, setPointerCapture() {}, hasPointerCapture: () => true, releasePointerCapture() {} };
+  Object.assign(view, { ui: { game }, boardEl, xrayActive: true, powerPointerId: null, peekKey: null, touchMode: "reveal", setFace() {}, cancelTouchTimer() {}, clearChordPreview() {}, clearPeek() { this.peekKey = null; }, handleXrayPointerMove() { this.peekKey = "2,3"; } });
+  global.document = { elementFromPoint: () => ({ closest: () => cell }) };
+  try {
+    view.bindBoardEvents();
+    const event = { target: { closest: () => cell }, pointerType: "touch", pointerId: 4, button: 0, clientX: 10, clientY: 10 };
+    handlers.pointerdown(event); handlers.pointerup(event); assert.equal(reveals, 0);
+    handlers.pointerdown(event); handlers.pointerup(event); assert.equal(reveals, 1);
+  } finally { global.document = previous; }
 });
