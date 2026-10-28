@@ -370,11 +370,12 @@ test("la sacudida mueve todos los elementos y termina en reposo", () => {
     const elements = Array.from({ length: 4 }, () => ({ style: {} }));
     const fx = Object.create(BP.FX.prototype);
     Object.assign(fx, { running: true, lastTime: 0, trauma: 1, shakeTime: 0, reduced: false,
-      ctx: { clearRect() {} }, width: 100, height: 100, particles: [], shakeTargets: elements });
-    fx.loop(16);
+      ctx: { clearRect() {} }, width: 100, height: 100, particles: [], shakeTargets: elements,
+      shakeFrameMs: 1000 / 30, lastShakeFrame: 0 });
+    fx.loop(40);
     assert.ok(elements[0].style.transform.includes("translate3d"));
     assert.ok(elements.every((element) => element.style.transform === elements[0].style.transform));
-    for (let time = 32; time <= 1600; time += 16) fx.loop(time);
+    for (let time = 56; time <= 1600; time += 16) fx.loop(time);
     assert.ok(elements.every((element) => element.style.transform === ""));
     assert.equal(fx.running, false);
   } finally { global.requestAnimationFrame = original; }
@@ -624,7 +625,7 @@ test("la sacudida no transforma el tablero ni los avisos", () => {
   const oldResize = BP.FX.prototype.resize;
   const app = { style: {} }, bar = { style: {} }, sidebar = { style: {} }, toast = { style: {} }, canvas = { style: {}, getContext: () => ({}) };
   try {
-    global.document = { body: app, querySelector: (name) => ({ ".app": app, ".topbar": bar, ".sidebar": sidebar }[name]), getElementById: (id) => id === "toasts" ? toast : null, querySelectorAll: () => [] };
+    global.document = { body: app, hidden: false, addEventListener() {}, removeEventListener() {}, querySelector: (name) => ({ ".app": app, ".topbar": bar, ".sidebar": sidebar }[name]), getElementById: (id) => id === "toasts" ? toast : null, querySelectorAll: () => [] };
     global.addEventListener = () => {};
     global.matchMedia = () => ({ matches: false });
     BP.FX.prototype.resize = () => {};

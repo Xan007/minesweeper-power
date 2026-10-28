@@ -94,6 +94,7 @@
       oscillator.connect(gain);
       gain.connect(this.master);
       oscillator.start(start);
+      oscillator.onended = () => { oscillator.disconnect(); gain.disconnect(); };
       oscillator.stop(start + duration + 0.03);
     }
 
@@ -126,6 +127,7 @@
       filter.connect(gain);
       gain.connect(this.master);
       source.start(start);
+      source.onended = () => { source.disconnect(); filter.disconnect(); gain.disconnect(); };
       source.stop(start + duration + 0.03);
     }
 

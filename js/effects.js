@@ -77,10 +77,25 @@
       this.appEl = document.querySelector(".app") || document.body;
       this.baseShakeTargets = [document.querySelector(".topbar"), document.querySelector(".sidebar"), this.canvas, this.flashEl].filter(Boolean);
       this.overlayShakeTargets = Array.from(document.querySelectorAll(".modal, .defuse-overlay"));
+      this.shakeFrameMs = 1000 / 30;
+      this.lastShakeFrame = 0;
+      this.scheduledEffects = new Set();
+      this.onResize = () => this.resize();
       this.shakeTargets = this.baseShakeTargets.slice();
       this.reduced = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
       this.resize();
-      window.addEventListener("resize", () => this.resize());
+      this.onVisibilityChange = () => {
+        if (document.hidden && this.raf) {
+          cancelAnimationFrame(this.raf);
+          this.raf = null;
+          this.running = false;
+          this.lastTime = 0;
+        } else if (!document.hidden && (this.particles.length || this.trauma > 0)) {
+          this.start();
+        }
+      };
+      document.addEventListener("visibilitychange", this.onVisibilityChange);
+      window.addEventListener("resize", this.onResize);
     }
 
     resize() {
@@ -106,6 +121,28 @@
       return { x: rect.left + rect.width / 2, y: rect.top + rect.height / 2 };
     }
 
+    schedule(callback, delay) {
+      const timer = window.setTimeout(() => {
+        this.scheduledEffects.delete(timer);
+        callback();
+      }, delay);
+      this.scheduledEffects.add(timer);
+      return timer;
+    }
+
+    dispose() {
+      if (this.raf) cancelAnimationFrame(this.raf);
+      this.raf = null;
+      this.running = false;
+      this.scheduledEffects.forEach((timer) => window.clearTimeout(timer));
+      this.scheduledEffects.clear();
+      window.removeEventListener("resize", this.onResize);
+      document.removeEventListener("visibilitychange", this.onVisibilityChange);
+      this.shakeTargets.forEach((element) => { element.style.transform = ""; });
+      this.particles.length = 0;
+      this.ctx.clearRect(0, 0, this.width, this.height);
+    }
+
     add(particle) {
       if (this.particles.length >= 200) return;
       particle.maxLife = particle.life;
@@ -114,7 +151,7 @@
     }
 
     start() {
-      if (this.running) return;
+      if (this.running || document.hidden) return;
       this.running = true;
       this.lastTime = performance.now();
       this.raf = requestAnimationFrame((time) => this.loop(time));
@@ -153,9 +190,11 @@
     loop(time) {
       if (!this.running) return;
       const ctx = this.ctx;
+      const hasParticles = this.particles.length > 0;
+      const hasShake = this.trauma > 0 || this.shaking;
       const dt = Math.min(0.034, Math.max(0.001, (time - this.lastTime) / 1000));
       this.lastTime = time;
-      ctx.clearRect(0, 0, this.width, this.height);
+      if (hasParticles) ctx.clearRect(0, 0, this.width, this.height);
 
       if (this.trauma > 0) {
         this.trauma = Math.max(0, this.trauma - dt * 1.7);
@@ -169,7 +208,10 @@
             shake > 0.001
               ? `translate3d(${offsetX.toFixed(2)}px, ${offsetY.toFixed(2)}px, 0)`
               : "";
-          this.shakeTargets.forEach((element) => { element.style.transform = transform; });
+          if (time - this.lastShakeFrame >= this.shakeFrameMs) {
+            this.lastShakeFrame = time;
+            this.shakeTargets.forEach((element) => { element.style.transform = transform; });
+          }
         }
       } else if (this.shaking) {
         this.shakeTargets.forEach((element) => { element.style.transform = ""; });
@@ -181,7 +223,9 @@
         particle.age += dt;
         particle.life -= dt;
         if (particle.life <= 0) {
-          this.particles.splice(index, 1);
+          const lastIndex = this.particles.length - 1;
+          if (index !== lastIndex) this.particles[index] = this.particles[lastIndex];
+          this.particles.pop();
           continue;
         }
         particle.vy += (particle.gravity || 0) * dt;
@@ -543,7 +587,7 @@
       document.body.classList.remove("freeze-flash");
       void document.body.offsetWidth;
       document.body.classList.add("freeze-flash");
-      window.setTimeout(() => document.body.classList.remove("freeze-flash"), 620);
+      this.schedule(() => document.body.classList.remove("freeze-flash"), 620);
 
       valid.slice(0, 9).forEach((element) => {
         const point = this.centerOf(element);
@@ -741,7 +785,7 @@
         const el = elements[i * step];
         if (!el) continue;
         const { x, y } = this.centerOf(el);
-        window.setTimeout(() => {
+        this.schedule(() => {
           this.burst(x, y, {
             count: 3,
             colors: ["#ffffff", "#9df8ff", "#5ff0c0"],
