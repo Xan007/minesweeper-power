@@ -145,6 +145,7 @@
 
   const TURBO_DURATION_MS = 25000;
   const TURBO_SPEED_MULT = 4.5;
+  const TURBO_RECHARGE_MS = 120000;
 
   function turboCost(count = 0) {
     const c = safeInt(count, 0, 9999, 0);
@@ -416,13 +417,13 @@
     let baseWin;
     let parTimeSec;
     if (difficulty === "expert") {
-      baseWin = 72;
+      baseWin = 36;
       parTimeSec = 90;
     } else if (difficulty === "intermediate") {
-      baseWin = 30;
+      baseWin = 15;
       parTimeSec = 35;
     } else {
-      baseWin = 12;
+      baseWin = 6;
       parTimeSec = 14;
     }
 
@@ -438,7 +439,7 @@
       const speedBonus = Math.round(baseWin * 0.45 * Math.max(0, speedRatio - 0.5));
 
       // 3. Recompensa proporcional a las celdas descubiertas
-      const cellsBonus = Math.max(1, Math.round(safeRevealed * 0.05));
+      const cellsBonus = Math.max(1, Math.round(safeRevealed * 0.025));
 
       // 4. Bonus de deducción limpia si no activó escudos ni cometió errores
       const cleanBonus = mistakes === 0 ? Math.max(2, Math.round(baseWin * 0.2)) : 0;
@@ -461,10 +462,10 @@
       };
     } else {
       // Recompensa parcial en caso de detonación: basada en la cantidad de celdas descubiertas y tiempo de exploración
-      const pool = Math.max(3, Math.round(baseWin * 0.5));
+      const pool = Math.max(2, Math.round(baseWin * 0.25));
       const cellsPart = Math.round(pool * safeRatio);
       const timeEffort = Math.round(Math.max(1, pool * 0.25) * clamp(elapsedSec / parTimeSec, 0.1, 1));
-      const total = Math.max(1, Math.round(cellsPart + timeEffort * 0.4));
+      const total = Math.max(1, Math.round(cellsPart + timeEffort * 0.4 * safeRatio));
       return {
         total,
         breakdown: {
@@ -492,12 +493,12 @@
   }
 
   function networkReward(level) {
-    return Math.min(1000000, 100 * safeInt(level, 1, 9999, 1));
+    return Math.min(500, 35 + 15 * safeInt(level, 1, 9999, 1));
   }
 
-  function extractorPower(level) {
+  function turboClickSeconds(level) {
     const safeLevel = safeInt(level, 0, 100, 0);
-    return (2 + safeLevel * 2) * Math.pow(2, Math.floor(safeLevel / 10));
+    return 0.5 + safeLevel * 0.025;
   }
 
   function extractorCost(level) {
@@ -533,6 +534,7 @@
     hireCost,
     TURBO_DURATION_MS,
     TURBO_SPEED_MULT,
+    TURBO_RECHARGE_MS,
     turboCost,
     maxBots,
     concurrency,
@@ -547,7 +549,7 @@
     botBoardReward,
     networkGoal,
     networkReward,
-    extractorPower,
+    turboClickSeconds,
     extractorCost,
     expertStreakBonus,
     formatCoins,

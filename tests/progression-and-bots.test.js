@@ -32,6 +32,16 @@ test("recompensas: velocidad y minas sin bandera dan bonos independientes", () =
   assert.ok(bot(0).total > bot(10).total);
 });
 
+test("el inicio de la economía mantiene acotadas las recompensas automáticas", () => {
+  const p = BP.Progression;
+  const win = p.botBoardReward({ difficulty: "beginner", win: true, elapsedMs: 14000, revealedSafe: 71, totalSafe: 71, mines: 10, flags: 0 });
+  const loss = p.botBoardReward({ difficulty: "beginner", win: false, elapsedMs: 14000, revealedSafe: 35, totalSafe: 71 });
+  assert.ok(win.total <= 15);
+  assert.ok(loss.total < win.total);
+  assert.equal(p.networkReward(1), 50);
+  assert.equal(p.networkReward(100), 500);
+});
+
 test("el análisis no depende del contenido oculto", () => {
   const board = new BP.Board(3, 2, 1);
   board.generated = true;
@@ -198,10 +208,10 @@ test("contratos diarios se cobran una sola vez y se renuevan al día siguiente",
   state.manualWins = 1;
   const result = { mode: "beginner", elapsedMs: 40000, usedPowers: 0 };
   const first = BP.Contracts.completeWin(state, result, "2026-10-28");
-  assert.equal(first.total, 350);
+  assert.equal(first.total, 100);
   assert.equal(BP.Contracts.completeWin(state, result, "2026-10-28").total, 0);
   const nextDay = BP.Contracts.completeWin(state, result, "2026-10-29");
-  assert.equal(nextDay.awarded.reduce((sum, item) => sum + item.reward, 0), 350);
+  assert.equal(nextDay.awarded.reduce((sum, item) => sum + item.reward, 0), 100);
   assert.equal(BP.Contracts.current(state, "2026-10-30").filter((item) => item.completed).length, 0);
 });
 
@@ -212,7 +222,7 @@ test("los contratos y rangos excluyen tableros personalizados", () => {
   assert.equal(result.awarded.length, 0);
   assert.equal(result.rankReward, 0);
   const classic = BP.Contracts.completeWin(state, { mode: "beginner", elapsedMs: 300000, usedPowers: 1 }, "2026-10-28");
-  assert.equal(classic.rankReward, 60);
+  assert.equal(classic.rankReward, 35);
   assert.equal(state.rank, 1);
   assert.equal(BP.Contracts.completeWin(state, { mode: "custom" }, "2026-10-28").rankReward, 0);
   const restored = BP.Progression.sanitizeState({ ...state, contracts: state.contracts });
@@ -296,10 +306,10 @@ test("los bots comparten escaneos con otros y completan operaciones persistentes
   assert.equal(state.network.assists, 1);
   manager.recordNetworkWin(first);
   const reward = manager.recordNetworkWin(state.bots[1]);
-  assert.deepEqual(reward, { level: 1, reward: 100 });
+  assert.deepEqual(reward, { level: 1, reward: 50 });
   assert.equal(state.network.level, 2);
   assert.equal(state.network.progress, 0);
-  assert.equal(state.coins, 125);
+  assert.equal(state.coins, 75);
   const restored = BP.Progression.sanitizeState(state);
   assert.equal(restored.network.level, 2);
   assert.equal(restored.network.assists, 1);
@@ -387,40 +397,49 @@ test("los efectos limitan partículas y solo sacuden las capas visibles", () => 
   assert.equal(fx.trauma, 0);
 });
 
-test("la extracción activa da monedas, forma combos y activa una descarga cada 25 clics", () => {
-  const state = BP.Progression.createState();
-  const store = { progression: state, addCoins(value) { state.coins += value; }, save() {},
-    spendCoins(value) { if (state.coins < value) return false; state.coins -= value; return true; } };
-  let boosts = 0;
-  const component = Object.create(BP.ExtractorComponent.prototype);
-  Object.assign(component, { store, comboClicks: 0, lastClickAt: null, lastEffectAt: 0, button: {},
-    sound: { play() {} }, fx: { floatingText() {}, coinBurst() {}, energyArcs() {}, shakeMedium() {} },
-    ui: { bots: { activeCount: () => 1, activateExtractionBoost() { boosts += 1; } }, refreshProgression() {}, toast() {} } });
-  const first = component.extract(10000);
-  assert.equal(first.clickReward, 2);
-  let result;
-  for (let i = 1; i < 25; i += 1) result = component.extract(10000 + i * 100);
-  assert.equal(result.combo, 5);
-  assert.equal(result.clickReward, 10);
-  assert.equal(result.burstReward, 22);
-  assert.equal(boosts, 1);
-  assert.equal(state.extractor.charge, 0);
-  assert.equal(component.extract(20000).combo, 1);
-  assert.equal(component.buyUpgrade(), true);
-  assert.equal(state.extractor.level, 1);
-  assert.equal(BP.Progression.extractorPower(1), 4);
-  const restored = BP.Progression.sanitizeState(state);
-  assert.equal(restored.extractor.level, 1);
-  assert.equal(restored.extractor.charge, 1);
-  assert.equal(restored.extractor.clicks, 26);
+test("los clics adelantan el turbo gratis sin crear monedas ni acumular cargas extra", () => {
+  const original = global.performance;
+  let now = 10000;
+  try {
+    global.performance = { now: () => now };
+    const state = BP.Progression.createState();
+    const store = { progression: state, save() {}, addProgressionLog() {},
+      spendCoins(value) { if (state.coins < value) return false; state.coins -= value; return true; } };
+    const manager = new BP.BotManager({ store });
+    const component = Object.create(BP.ExtractorComponent.prototype);
+    Object.assign(component, { store, comboClicks: 0, lastClickAt: null, lastEffectAt: 0, button: {},
+      sound: { play() {} }, fx: { floatingText() {}, energyArcs() {}, shakeLight() {} },
+      ui: { bots: manager, refreshProgression() {}, toast() {} } });
+    const first = component.extract(now);
+    assert.equal(first.reducedMs, 500);
+    assert.equal(state.coins, 25);
+    for (let i = 1; i < 25; i += 1) { now += 100; component.extract(now); }
+    assert.equal(component.comboAt(now), 5);
+    assert.equal(state.coins, 25);
+    manager.turboFreeRechargeAt = now + 200;
+    assert.equal(component.extract(now).reducedMs, 200);
+    assert.equal(manager.turboFreeRechargeAt, now);
+    assert.equal(component.extract(now).reducedMs, 0);
+    assert.equal(component.activateFreeTurbo(), true);
+    assert.equal(manager.isTurboActive, true);
+    assert.equal(state.coins, 25);
+    assert.equal(component.activateFreeTurbo(), false);
+    assert.equal(manager.turboFreeRechargeRemainingMs, BP.Progression.TURBO_RECHARGE_MS);
+    now += 100;
+    assert.ok(component.extract(now).reducedMs > 0);
+    assert.ok(manager.turboFreeRechargeRemainingMs < BP.Progression.TURBO_RECHARGE_MS);
+  } finally { global.performance = original; }
 });
 
-test("mejorar el extractor exige monedas y multiplica la potencia cada diez niveles", () => {
+test("mejorar la recarga exige monedas y conserva los niveles anteriores", () => {
   const p = BP.Progression;
-  assert.ok(p.extractorPower(10) > p.extractorPower(9) * 2);
+  assert.ok(p.turboClickSeconds(10) > p.turboClickSeconds(9));
   assert.ok(p.extractorCost(50) > p.extractorCost(49));
   assert.equal(p.extractorCost(100), null);
   const state = p.createState();
+  state.extractor.level = 25;
+  assert.equal(p.sanitizeState(state).extractor.level, 25);
+  state.extractor.level = 0;
   const component = Object.create(BP.ExtractorComponent.prototype);
   component.store = { progression: state, spendCoins: () => false };
   assert.equal(component.buyUpgrade(), false);
@@ -430,16 +449,42 @@ test("mejorar el extractor exige monedas y multiplica la potencia cada diez nive
   assert.equal(p.sanitizeState(state).coins, 5000000000);
 });
 
-test("la descarga acelera a los bots por ocho segundos y se combina con turbo", () => {
+test("la recarga muestra el tiempo y habilita el turbo solo cuando está listo", () => {
+  const original = global.performance;
+  let now = 1000;
+  try {
+    global.performance = { now: () => now };
+    const state = BP.Progression.createState();
+    const manager = new BP.BotManager({ store: { progression: state } });
+    const component = Object.create(BP.ExtractorComponent.prototype);
+    const upgrade = { setAttribute(name, value) { this[name] = value; } };
+    Object.assign(component, { store: { progression: state }, ui: { bots: manager },
+      lastClickAt: null, comboClicks: 0, button: {}, activate: {}, upgrade, info: {}, chargeLabel: {}, bar: { style: {} } });
+    component.render(now);
+    assert.equal(component.button.textContent, "Cargar −0,5 s");
+    assert.equal(component.chargeLabel.textContent, "120 s");
+    assert.equal(component.activate.disabled, true);
+    manager.accelerateTurboRecharge(120000, now);
+    component.render(now);
+    assert.equal(component.button.disabled, true);
+    assert.equal(component.activate.disabled, false);
+    assert.equal(component.chargeLabel.textContent, "LISTO");
+    assert.equal(component.bar.style.width, "100%");
+  } finally { global.performance = original; }
+});
+
+test("la recarga no avanza por debajo de cero y el turbo termina a tiempo", () => {
   const original = global.performance;
   let now = 1000;
   try {
     global.performance = { now: () => now };
     const manager = new BP.BotManager({ store: { progression: BP.Progression.createState() } });
-    manager.activateExtractionBoost();
-    assert.equal(manager.speedMultiplier, 1.5);
+    assert.equal(manager.accelerateTurboRecharge(200000), 120000);
+    assert.equal(manager.turboFreeRechargeRemainingMs, 0);
+    assert.equal(manager.accelerateTurboRecharge(1000), 0);
+    assert.equal(manager.speedMultiplier, 1);
     manager.turboUntil = 5000;
-    assert.equal(manager.speedMultiplier, 6.75);
+    assert.equal(manager.speedMultiplier, 4.5);
     now = 9001;
     assert.equal(manager.speedMultiplier, 1);
   } finally { global.performance = original; }

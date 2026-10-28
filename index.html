@@ -8,7 +8,7 @@
   <title>Buscaminas Power · Edición clásica</title>
   <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
   <link rel="stylesheet" href="css/base.css?v=classic-4">
-  <link rel="stylesheet" href="css/layout.css?v=clean-12">
+  <link rel="stylesheet" href="css/layout.css?v=turbo-13">
   <link rel="stylesheet" href="css/board.css?v=classic-10">
   <link rel="stylesheet" href="css/powers.css?v=clean-12">
   <link rel="stylesheet" href="css/progression.css?v=mobile-11">
@@ -409,16 +409,17 @@
               <div class="hud-record" id="bestChip">SIN RÉCORD</div>
             </div>
 
-            <section class="extractor" aria-label="Extracción activa">
+            <section class="extractor" aria-label="Recarga activa del turbo">
               <div class="extractor-copy">
-                <strong>EXTRACCIÓN ACTIVA</strong>
+                <strong>RECARGA DE TURBO</strong>
                 <span id="extractInfo">Nivel 0 · combo ×1</span>
-                <span class="extractor-hint">25 clics: descarga y bots más rápidos</span>
+                <span class="extractor-hint">Haz clic para recargar. Actívalo gratis cuando esté listo.</span>
               </div>
-              <button class="primary-btn extractor-button" id="extractBtn" type="button">Extraer +2</button>
+              <button class="primary-btn extractor-button" id="extractBtn" type="button">Cargar −0,5 s</button>
+              <button class="ghost-btn extractor-activate" id="extractActivate" type="button" disabled>Activar turbo gratis</button>
               <button class="ghost-btn extractor-upgrade" id="extractUpgrade" type="button">Mejorar · 40</button>
-              <div class="extractor-charge" aria-label="Carga de descarga">
-                <span>DESCARGA <b id="extractCharge">0/25</b></span>
+              <div class="extractor-charge" aria-label="Tiempo de recarga gratuita">
+                <span>RECARGA <b id="extractCharge">120 s</b></span>
                 <div class="extractor-track"><i id="extractBar"></i></div>
               </div>
             </section>
@@ -975,9 +976,9 @@
 
   <script src="js/utils.js?v=classic-4" defer></script>
   <script src="js/config.js?v=classic-10" defer></script>
-  <script src="js/progression.js?v=classic-10" defer></script>
-  <script src="js/components/contracts.js?v=classic-8" defer></script>
-  <script src="js/components/extractor.js?v=clean-12" defer></script>
+  <script src="js/progression.js?v=turbo-13" defer></script>
+  <script src="js/components/contracts.js?v=turbo-13" defer></script>
+  <script src="js/components/extractor.js?v=turbo-13" defer></script>
   <script src="js/storage.js?v=mobile-11" defer></script>
   <script src="js/audio.js?v=classic-4" defer></script>
   <script src="js/effects.js?v=clean-12" defer></script>
@@ -985,12 +986,12 @@
   <script src="js/defuse.js?v=classic-4" defer></script>
   <script src="js/components/bot-brain.js?v=classic-6" defer></script>
   <script src="js/components/bot-runner.js?v=classic-8" defer></script>
-  <script src="js/bots.js?v=classic-9" defer></script>
+  <script src="js/bots.js?v=turbo-13" defer></script>
   <script src="js/game.js?v=classic-10" defer></script>
   <script src="js/components/modals.js?v=classic-10" defer></script>
   <script src="js/components/board-view.js?v=mobile-11" defer></script>
   <script src="js/components/hq.js?v=classic-5" defer></script>
-  <script src="js/components/spectator.js?v=classic-8" defer></script>
+  <script src="js/components/spectator.js?v=turbo-13" defer></script>
   <script src="js/ui.js?v=mobile-11" defer></script>
   <script src="js/app.js?v=classic-4" defer></script>
 </body>

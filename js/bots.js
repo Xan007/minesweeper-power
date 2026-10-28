@@ -5,8 +5,7 @@
   const BP = (window.BP = window.BP || {});
   const BotRunner = BP.BotRunner;
 
-  // Tiempo de recarga gratuita del Turbo (segundos de espera para la próxima carga automática)
-  const TURBO_FREE_RECHARGE_SECS = 120;
+  const TURBO_RECHARGE_MS = BP.Progression.TURBO_RECHARGE_MS;
 
   class BotManager {
     constructor({ store }) {
@@ -17,9 +16,8 @@
       this.onUpdate = null;
       this.onNetworkReward = null;
       this.turboUntil = 0;
-      this.extractionBoostUntil = 0;
       // Recarga automática: timestamp (performance.now) en el que se concede una carga gratis
-      this.turboFreeRechargeAt = performance.now() + TURBO_FREE_RECHARGE_SECS * 1000;
+      this.turboFreeRechargeAt = performance.now() + TURBO_RECHARGE_MS;
       this._lastTurboWasActive = false;
     }
 
@@ -32,12 +30,15 @@
     }
 
     get speedMultiplier() {
-      const turbo = this.isTurboActive ? (BP.Progression.TURBO_SPEED_MULT || 4.5) : 1;
-      return turbo * (performance.now() < this.extractionBoostUntil ? 1.5 : 1);
+      return this.isTurboActive ? BP.Progression.TURBO_SPEED_MULT : 1;
     }
 
-    activateExtractionBoost() {
-      this.extractionBoostUntil = performance.now() + 8000;
+    accelerateTurboRecharge(amountMs, now = performance.now()) {
+      const amount = Math.max(0, Number(amountMs) || 0);
+      const remaining = Math.max(0, this.turboFreeRechargeAt - now);
+      const applied = Math.min(remaining, amount);
+      this.turboFreeRechargeAt -= applied;
+      return applied;
     }
 
     get turboFreeRechargeRemainingMs() {
@@ -65,7 +66,7 @@
 
       if (isFree) {
         // Recarga gratuita: reiniciar el contador de recarga
-        this.turboFreeRechargeAt = performance.now() + TURBO_FREE_RECHARGE_SECS * 1000;
+        this.turboFreeRechargeAt = performance.now() + TURBO_RECHARGE_MS;
         this.store.addProgressionLog(
           `¡Turbo recargado automáticamente! (${Math.round(P.TURBO_DURATION_MS / 1000)}s gratis)`,
           "success"
@@ -73,7 +74,7 @@
       } else {
         state.turboCount = (state.turboCount || 0) + 1;
         // Reiniciar el temporizador de recarga gratuita al comprar
-        this.turboFreeRechargeAt = performance.now() + TURBO_FREE_RECHARGE_SECS * 1000;
+        this.turboFreeRechargeAt = performance.now() + TURBO_RECHARGE_MS;
         this.store.addProgressionLog(
           `¡Modo Turbo activado por ${Math.round(P.TURBO_DURATION_MS / 1000)}s! (-${cost} monedas)`,
           "success"

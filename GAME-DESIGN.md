@@ -2,7 +2,7 @@
 
 La partida manual debe ser interesante por sí misma: leer pistas, decidir si arriesgar, usar poderes en momentos tensos y recibir una recompensa clara. Los bots acompañan esa partida y generan recursos mientras la página está abierta.
 
-La estación de extracción permite obtener monedas continuamente con clics. Los clics seguidos elevan el combo hasta ×5; cada 25 clics se cobra una descarga y los bots activos reciben 1,5× de velocidad durante ocho segundos. La potencia se puede mejorar hasta el nivel 100 y se duplica cada diez niveles. La carga y las mejoras se guardan; el combo y el impulso temporal se reinician al recargar.
+La estación de recarga permite adelantar el turbo gratuito con clics, sin generar monedas directamente. Cada clic reduce la espera y los clics seguidos elevan el combo hasta ×5. Cuando está listo, el jugador lo activa para acelerar los bots 4,5× durante 25 segundos. Se puede cargar la siguiente activación mientras el turbo está activo, pero solo se almacena una. Las mejoras de la antigua estación conservan su nivel y ahora aumentan el tiempo reducido por clic; el combo y la recarga temporal se reinician al recargar la página.
 
 El Consejero señala una jugada deducible y dibuja un cursor auxiliar de estilo clásico; el puntero del sistema permanece bajo el control del jugador. Hay tres pistas por partida y pueden ampliarse en el Cuartel. Una bandera incorrecta, una celda congelada o la ausencia de una deducción hacen que avise sin consumir una pista. Usar el Consejero cuenta como usar un poder para los contratos.
 
@@ -21,6 +21,7 @@ El Consejero señala una jugada deducible y dibuja un cursor auxiliar de estilo 
 - Las partidas personalizadas mantienen recompensas normales, pero no cuentan para contratos ni rango. Los datos antiguos conservan sus mejoras; su número de victorias se utiliza como aproximación inicial para el rango.
 - La refinería y la racha experta afectan a la recompensa de victoria manual; no multiplican contratos ni recompensas de rango.
 - Los bots no siguen generando monedas con la página cerrada. No hay prestigio ni pérdida de progreso.
+- Las recompensas futuras de bots, operaciones y contratos se redujeron para limitar la inflación. Las monedas ya ganadas y las mejoras existentes se conservan.
 
 ## Próximas oportunidades
 

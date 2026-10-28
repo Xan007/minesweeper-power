@@ -3,10 +3,10 @@
   "use strict";
   const BP = (window.BP = window.BP || {});
   const definitions = [
-    { id: "clear", label: "Despeja un sector", reward: 75, accepts: () => true },
-    { id: "swift", label: "Victoria contrarreloj", reward: 125,
+    { id: "clear", label: "Despeja un sector", reward: 20, accepts: () => true },
+    { id: "swift", label: "Victoria contrarreloj", reward: 35,
       accepts: (result) => result.elapsedMs <= ({ beginner: 90000, intermediate: 180000, expert: 360000 })[result.mode] },
-    { id: "clean", label: "Gana sin usar poderes", reward: 150, accepts: (result) => result.usedPowers === 0 },
+    { id: "clean", label: "Gana sin usar poderes", reward: 45, accepts: (result) => result.usedPowers === 0 },
   ];
 
   function localDate(now = new Date()) {
@@ -32,7 +32,7 @@
       });
     }
     const nextRank = Math.floor(state.fieldWins / 3);
-    const rankReward = nextRank > state.rank ? 50 + Math.min(nextRank, 100) * 10 : 0;
+    const rankReward = nextRank > state.rank ? 30 + Math.min(nextRank, 100) * 5 : 0;
     state.rank = Math.max(state.rank, nextRank);
     return { awarded, rankReward, total: awarded.reduce((sum, item) => sum + item.reward, rankReward) };
   }

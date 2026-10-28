@@ -233,7 +233,7 @@
       const freeReady = this.bots.turboFreeRechargeReady;
       const cost = P.turboCost(state.turboCount || 0);
       const rechargeRemSec = Math.ceil(this.bots.turboFreeRechargeRemainingMs / 1000);
-      const totalRechargeSec = 120;
+      const totalRechargeSec = P.TURBO_RECHARGE_MS / 1000;
       const rechargePct = Math.max(0, Math.min(100, 100 - (this.bots.turboFreeRechargeRemainingMs / (totalRechargeSec * 1000)) * 100));
 
       if (this.specTurboBtn) {
