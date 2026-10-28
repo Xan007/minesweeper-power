@@ -828,3 +828,13 @@
   from { filter: brightness(1.25); }
   to { filter: brightness(0.9); }
 }
+
+@media (max-width: 760px) {
+  .power-card { min-height: 48px; }
+  .power-name, .power-state { font-size: 11px; }
+  .defuse-cut-btn { min-height: 44px; }
+}
+@media (max-width: 420px) {
+  .power-body { flex-direction: column; align-items: flex-start; gap: 2px; }
+  .power-meta { flex-direction: row; align-items: center; }
+}

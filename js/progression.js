@@ -65,8 +65,8 @@
       short: "Capacidad",
       icon: "i-bot",
       maxLevel: 4,
-      baseCost: 70,
-      growth: 2.2,
+      baseCost: 55,
+      growth: 2.0,
       description: "Más espacio para contratar y mantener bots.",
       effect: (level) => `${1 + level} bots contratables`,
       next: (level) => `${2 + level} bots contratables`,
@@ -77,8 +77,8 @@
       short: "Concurrencia",
       icon: "i-bolt",
       maxLevel: 3,
-      baseCost: 90,
-      growth: 2.3,
+      baseCost: 65,
+      growth: 2.1,
       description: "Cada nivel permite que un bot más trabaje a la vez.",
       effect: (level) => `${1 + level} bots simultáneos`,
       next: (level) => `${2 + level} bots simultáneos`,
@@ -89,8 +89,8 @@
       short: "Velocidad",
       icon: "i-target",
       maxLevel: 6,
-      baseCost: 35,
-      growth: 1.65,
+      baseCost: 25,
+      growth: 1.6,
       description: "Reduce el tiempo entre decisiones de cada bot.",
       effect: (level) => `${(botStepMs({ upgrades: { speed: level } }) / 1000).toFixed(2)} s / acción`,
       next: (level) => `${(botStepMs({ upgrades: { speed: level + 1 } }) / 1000).toFixed(2)} s / acción`,
@@ -101,8 +101,8 @@
       short: "Inteligencia",
       icon: "i-chip",
       maxLevel: 6,
-      baseCost: 50,
-      growth: 1.7,
+      baseCost: 35,
+      growth: 1.65,
       description: "Mejora la precisión. Los bots torpes fallan más.",
       effect: (level) => `${Math.round(botAccuracy({ upgrades: { intelligence: level } }) * 100)}% de precisión`,
       next: (level) => `${Math.round(botAccuracy({ upgrades: { intelligence: level + 1 } }) * 100)}% de precisión`,
@@ -326,33 +326,24 @@
     };
   }
 
-  function manualReward(mode, config, elapsedMs) {
+  function manualBaseReward(mode, config) {
+    const presetRewards = { beginner: 18, intermediate: 45, expert: 110 };
+    if (presetRewards[mode]) return presetRewards[mode];
     const width = Math.max(1, Number(config && config.width) || 9);
     const height = Math.max(1, Number(config && config.height) || 9);
     const mines = Math.max(1, Number(config && config.mines) || 10);
-    const area = width * height;
-    let base;
-    if (mode === "beginner") base = 12;
-    else if (mode === "intermediate") base = 30;
-    else if (mode === "expert") base = 80;
-    else base = Math.max(8, Math.round(area / 11 + mines * 0.55));
+    return Math.max(12, Math.round(width * height / 8 + mines * 0.75));
+  }
+
+  function manualReward(mode, config, elapsedMs) {
+    const base = manualBaseReward(mode, config);
     const seconds = Math.max(0, Number(elapsedMs) || 0) / 1000;
     const speedFactor = Math.max(0, 1 - seconds / 240);
-    const bonus = Math.round(base * 0.6 * speedFactor);
-    return base + bonus;
+    return base + Math.round(base * 0.6 * speedFactor);
   }
 
   function manualLossReward(mode, config, revealedCount, totalSafeCount) {
-    const width = Math.max(1, Number(config && config.width) || 9);
-    const height = Math.max(1, Number(config && config.height) || 9);
-    const mines = Math.max(1, Number(config && config.mines) || 10);
-    const area = width * height;
-    let base;
-    if (mode === "beginner") base = 12;
-    else if (mode === "intermediate") base = 30;
-    else if (mode === "expert") base = 80;
-    else base = Math.max(8, Math.round(area / 11 + mines * 0.55));
-
+    const base = manualBaseReward(mode, config);
     const maxLoss = Math.max(2, Math.round(base * 0.35));
     const safeCount = Math.max(1, Number(totalSafeCount) || 1);
     const revealed = Math.max(0, Number(revealedCount) || 0);
@@ -365,13 +356,13 @@
     let baseWin;
     let parTimeSec;
     if (difficulty === "expert") {
-      baseWin = 48;
+      baseWin = 72;
       parTimeSec = 90;
     } else if (difficulty === "intermediate") {
-      baseWin = 20;
+      baseWin = 30;
       parTimeSec = 35;
     } else {
-      baseWin = 8;
+      baseWin = 12;
       parTimeSec = 14;
     }
 
@@ -443,14 +434,7 @@
     }
   }
 
-  function formatNumber(value) {
-    const number = Math.max(0, Math.round(Number(value) || 0));
-    try {
-      return new Intl.NumberFormat("es-ES").format(number);
-    } catch (_error) {
-      return String(number);
-    }
-  }
+  const formatNumber = formatCoins;
 
   BP.Progression = {
     SCHEMA_VERSION,

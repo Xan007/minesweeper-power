@@ -8,10 +8,10 @@
   <title>Buscaminas Power · Edición clásica</title>
   <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
   <link rel="stylesheet" href="css/base.css?v=classic-4">
-  <link rel="stylesheet" href="css/layout.css?v=classic-4">
+  <link rel="stylesheet" href="css/layout.css?v=classic-5">
   <link rel="stylesheet" href="css/board.css?v=classic-4">
-  <link rel="stylesheet" href="css/powers.css?v=classic-4">
-  <link rel="stylesheet" href="css/progression.css?v=classic-4">
+  <link rel="stylesheet" href="css/powers.css?v=classic-5">
+  <link rel="stylesheet" href="css/progression.css?v=classic-5">
 </head>
 <body>
   <svg class="svg-sprite" aria-hidden="true" focusable="false">
@@ -147,15 +147,15 @@
         <button class="icon-btn" id="soundBtn" type="button" aria-label="Silenciar sonido" aria-pressed="true" title="Sonido">
           <svg class="icon" id="soundIcon"><use href="#i-volume"></use></svg>
         </button>
-        <button class="ghost-btn" id="hqBtn" type="button">
+        <button class="ghost-btn" id="hqBtn" type="button" aria-label="Cuartel">
           <svg class="icon"><use href="#i-bot"></use></svg>
           <span>Cuartel</span>
         </button>
-        <button class="ghost-btn" id="recordsBtn" type="button">
+        <button class="ghost-btn" id="recordsBtn" type="button" aria-label="R?cords">
           <svg class="icon"><use href="#i-trophy"></use></svg>
           <span>Récords</span>
         </button>
-        <button class="ghost-btn" id="helpBtn" type="button">
+        <button class="ghost-btn" id="helpBtn" type="button" aria-label="C?mo jugar">
           <svg class="icon"><use href="#i-help"></use></svg>
           <span>Cómo jugar</span>
         </button>
@@ -175,7 +175,7 @@
               <span id="powerCharges">6</span>
             </div>
           </div>
-          <p class="panel-sub">Atajos: <kbd>1</kbd>–<kbd>4</kbd>. Se recarga cada partida.</p>
+          <p class="panel-sub">Atajos: <kbd>1</kbd>â€“<kbd>4</kbd>. Se recarga cada partida.</p>
 
           <div class="power-list">
             <button class="power-card power-card--xray" data-power="xray" id="power-xray" type="button">
@@ -185,7 +185,7 @@
                   <span class="power-name">Visión X</span>
                   <kbd>1</kbd>
                 </span>
-                <span class="power-desc">Escanea celdas bajo el cursor por 5 s.</span>
+                <span class="power-desc">Revela un ?rea durante 6 s.</span>
                 <span class="power-meta">
                   <span class="pips" data-pips="xray" aria-hidden="true"></span>
                   <span class="power-state" data-state="xray">2 usos</span>
@@ -517,7 +517,7 @@
             <div class="spec-single-bar">
               <button class="ghost-btn ghost-btn--small" id="specBackToAllBtn" type="button">
                 <svg class="icon"><use href="#i-arrow"></use></svg>
-                <span>← Volver al Muro General (Ver todos)</span>
+                <span>â† Volver al Muro General (Ver todos)</span>
               </button>
             </div>
             <div class="spectator-board-card">
@@ -573,7 +573,7 @@
 
               <div class="thought-bubble" id="specThoughtBubble">
                 <div class="thought-top">
-                  <span class="thought-face" id="specThoughtFace">🧠</span>
+                  <span class="thought-face" id="specThoughtFace">ðŸ§ </span>
                   <span class="thought-kind" id="specThoughtKind">PENSAMIENTO ACTUAL</span>
                 </div>
                 <p id="specThoughtText">Analizando celdas y números adyacentes...</p>
@@ -664,7 +664,7 @@
             <div><span>Doble clic</span><kbd>Despejar</kbd></div>
             <div><span>Rueda / clic central</span><kbd>Despejar</kbd></div>
             <div><span>Tecla H</span><kbd>Martillo</kbd></div>
-            <div><span>Teclas 1–4</span><kbd>Poderes</kbd></div>
+            <div><span>Teclas 1â€“4</span><kbd>Poderes</kbd></div>
             <div><span>Espacio / Enter</span><kbd>Cortar cable</kbd></div>
             <div><span>Esc</span><kbd>Cancelar modo</kbd></div>
             <div><span>Táctil</span><kbd>Mantener = bandera</kbd></div>
@@ -685,8 +685,8 @@
       <div class="help-progression">
         <h3><span class="help-num">04</span> Progresión incremental</h3>
         <div class="help-progression-grid">
-          <p><b>1. Juega manual.</b> Cada victoria manual acredita monedas según dificultad y tiempo. El primer bot cuesta 25 monedas.</p>
-          <p><b>2. Abre el Cuartel.</b> Contrata bots, asígnales una dificultad y observa cómo resuelven tableros mientras tú juegas.</p>
+          <p><b>1. Juega manual.</b> Cada partida da monedas seg?n dificultad y avance; las victorias premian tambi?n la velocidad. Empiezas con un bot gratis.</p>
+          <p><b>2. Abre el Cuartel.</b> Asigna una dificultad a tu bot y observa c?mo resuelve tableros mientras juegas. Ampl?a la capacidad para contratar m?s.</p>
           <p><b>3. Mejora el núcleo.</b> Capacidad, concurrencia, velocidad e inteligencia. Más inteligencia reduce los errores y las conjeturas de los bots.</p>
           <p><b>4. Compra habilidades.</b> Sube el nivel de Visión X, desarme, escudo y criogenia. Después equípalas en cada bot desde su tarjeta.</p>
         </div>
@@ -929,17 +929,18 @@
 
   <script src="js/utils.js?v=classic-4" defer></script>
   <script src="js/config.js?v=classic-4" defer></script>
-  <script src="js/progression.js?v=classic-4" defer></script>
+  <script src="js/progression.js?v=classic-5" defer></script>
   <script src="js/storage.js?v=classic-4" defer></script>
   <script src="js/audio.js?v=classic-4" defer></script>
   <script src="js/effects.js?v=classic-4" defer></script>
   <script src="js/board.js?v=classic-4" defer></script>
   <script src="js/defuse.js?v=classic-4" defer></script>
-  <script src="js/bots.js?v=classic-4" defer></script>
+  <script src="js/components/bot-runner.js?v=classic-5" defer></script>
+  <script src="js/bots.js?v=classic-5" defer></script>
   <script src="js/game.js?v=classic-4" defer></script>
   <script src="js/components/modals.js?v=classic-4" defer></script>
-  <script src="js/components/board-view.js?v=classic-4" defer></script>
-  <script src="js/components/hq.js?v=classic-4" defer></script>
+  <script src="js/components/board-view.js?v=classic-5" defer></script>
+  <script src="js/components/hq.js?v=classic-5" defer></script>
   <script src="js/components/spectator.js?v=classic-4" defer></script>
   <script src="js/ui.js?v=classic-4" defer></script>
   <script src="js/app.js?v=classic-4" defer></script>

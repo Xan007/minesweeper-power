@@ -2219,3 +2219,5 @@
   color: var(--title);
   background: #e6f0fa;
 }
+
+@media (max-width: 420px) { .top-actions #recordsBtn { display: inline-flex; } }

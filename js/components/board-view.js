@@ -299,7 +299,7 @@
       const viewH = Math.max(220, this.boardViewport.clientHeight - 20);
 
       const maxCell = cols > 20 ? 28 : (cols > 12 ? 32 : 36);
-      const minCell = 18;
+      const minCell = window.matchMedia("(pointer: coarse)").matches ? 28 : 18;
       const fitCell = Math.floor(Math.min(viewW / cols, viewH / rows));
       const finalCell = U.clamp(fitCell, minCell, maxCell);
 

@@ -140,7 +140,7 @@
           <div class="hq-empty">
             <span class="hq-empty-icon">${U.icon("i-bot")}</span>
             <h4>Sin bots en el escuadrón</h4>
-            <p>Gana una partida manual para conseguir monedas y contrata tu primer bot. El primero cuesta ${P.formatCoins(P.hireCost(0))} monedas.</p>
+            <p>Gana monedas jugando y contrata un bot por ${P.formatCoins(P.hireCost(0))} monedas.</p>
           </div>
         `;
         return;

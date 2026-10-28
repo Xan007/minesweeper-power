@@ -2031,3 +2031,20 @@
     grid-template-columns: 1fr;
   }
 }
+
+/* Controles t?ctiles conservando el relieve cl?sico. */
+@media (max-width: 760px) {
+  .topbar { min-height: 44px; padding: 3px 5px; }
+  .top-actions .icon-btn, .top-actions .ghost-btn {
+    display: inline-flex; width: 36px; height: 38px; min-height: 38px;
+  }
+  .top-actions .coin-chip { min-height: 38px; height: 38px; padding: 0 6px; }
+  .diff-btn, .toolbar-actions .chip-btn, .view-tab, .hq-tab,
+  .modal-close, .modal-actions button, .hq-panel-head button { min-height: 44px; }
+  .face-btn { width: 44px; height: 44px; }
+  .modal { padding: max(8px, env(safe-area-inset-top)) max(8px, env(safe-area-inset-right)) max(8px, env(safe-area-inset-bottom)) max(8px, env(safe-area-inset-left)); }
+}
+@media (max-width: 420px) {
+  #recordsBtn { display: inline-flex; }
+  .power-list { grid-template-columns: repeat(2, minmax(0, 1fr)) !important; gap: 6px; }
+}
