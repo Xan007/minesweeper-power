@@ -11,6 +11,11 @@
 
   const clamp = (value, min, max) => Math.min(max, Math.max(min, value));
 
+  function fitBoardCell(cols, rows, width, height, maxCell) {
+    const fit = Math.min(maxCell, width / Math.max(1, cols), height / Math.max(1, rows));
+    return Math.max(1, Math.floor(fit * 100) / 100);
+  }
+
   function pad(value, length = 2) {
     return String(Math.abs(value)).padStart(length, "0");
   }
@@ -107,6 +112,7 @@
     $,
     $$,
     clamp,
+    fitBoardCell,
     pad,
     formatClock,
     formatPrecise,

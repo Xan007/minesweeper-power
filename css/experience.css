@@ -90,3 +90,7 @@ body { font-size: 13px; color: var(--ui-ink); }
 #board .cell .peek[data-kind="mine"] .icon { width: 55%; height: 55%; }
 #board .cell .peek[data-kind="empty"] { color: transparent; }
 .xray-lens { position: absolute; z-index: 6; pointer-events: none; border: 2px solid #165d79; box-shadow: inset 0 0 0 1px rgba(255,255,255,.85), 0 0 0 1px rgba(255,255,255,.7); }
+
+/* Los tableros se escalan dentro de su espacio: nunca tienen barras de desplazamiento. */
+.board-viewport, .spec-card-board-wrap, .spectator-board-wrap { max-height: none; overflow: visible; }
+.spectator-multi-grid { align-items: start; }

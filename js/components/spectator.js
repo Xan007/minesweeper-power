@@ -442,10 +442,7 @@
 
         // Pintar tablero del bot seleccionado
         if (this.specBoard && runner.board) {
-          const wrap = this.specBoardWrap;
-          const maxW = wrap ? Math.max(280, wrap.clientWidth - 24) : 400;
-          const fitCell = Math.max(24, Math.min(42, Math.floor(maxW / runner.board.width)));
-          this.paintBoardCells(this.specBoard, runner.board, runner.targetCell, fitCell);
+          this.paintBoardCells(this.specBoard, runner.board, runner.targetCell);
         }
       }
     }
@@ -788,21 +785,22 @@
       }
 
       if (this.specBoard && runner && runner.board) {
-        const wrap = this.specBoardWrap;
-        const maxW = wrap ? Math.max(280, wrap.clientWidth - 24) : 400;
-        const fitCell = Math.max(24, Math.min(42, Math.floor(maxW / runner.board.width)));
-        this.paintBoardCells(this.specBoard, runner.board, runner.targetCell, fitCell);
+        this.paintBoardCells(this.specBoard, runner.board, runner.targetCell);
       }
     }
 
-    paintBoardCells(container, board, targetCell, explicitCellSize = null) {
+    paintBoardCells(container, board, targetCell) {
       const currentCols = container.style.getPropertyValue("--cols");
       const currentRows = container.style.getPropertyValue("--rows");
       const needRebuild = container.children.length !== board.area ||
         currentCols !== String(board.width) ||
         currentRows !== String(board.height);
 
-      const cellSize = explicitCellSize || (board.width > 20 ? 24 : (board.width > 12 ? 26 : 32));
+      const wrap = container.parentElement;
+      const width = Math.max(1, (wrap ? wrap.clientWidth : 320) - 16);
+      const isDetail = container === this.specBoard;
+      const height = Math.max(1, Math.min(isDetail ? 480 : 440, (window.innerHeight || 800) * (isDetail ? 0.55 : 0.5)) - 16);
+      const cellSize = U.fitBoardCell(board.width, board.height, width, height, isDetail ? 42 : 32);
       container.style.setProperty("--cols", String(board.width));
       container.style.setProperty("--rows", String(board.height));
       container.style.setProperty("--cell", `${cellSize}px`);

@@ -552,17 +552,14 @@ test("el analisis sencillo y avanzado mantienen las deducciones basicas", () => 
   }
 });
 
-test("el tablero mantiene celdas legibles incluso cuando debe desplazarse", () => {
-  const view = Object.create(BP.BoardViewComponent.prototype);
-  let cell = "";
-  view.boardEl = { style: { getPropertyValue: () => "30", setProperty: (_name, value) => { cell = value; } } };
-  view.boardViewport = { clientWidth: 320 };
-  view.fitCellSize();
-  assert.equal(cell, "28px");
-  view.boardEl.style.getPropertyValue = () => "9";
-  view.boardViewport.clientWidth = 900;
-  view.fitCellSize();
-  assert.equal(cell, "48px");
+test("el tablero completo se ajusta al ancho y alto disponibles", () => {
+  const fit = BP.Utils.fitBoardCell;
+  for (const [cols, rows, width, height] of [[9, 9, 320, 440], [16, 16, 400, 440], [30, 16, 320, 440], [40, 24, 300, 240]]) {
+    const size = fit(cols, rows, width, height, 48);
+    assert.ok(size * cols <= width);
+    assert.ok(size * rows <= height);
+  }
+  assert.equal(fit(9, 9, 900, 800, 48), 48);
 });
 
 test("el canon congela al mantener y arrastrar sin abrir al soltar", () => {
