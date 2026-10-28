@@ -8,10 +8,10 @@
   <title>Buscaminas Power · Edición clásica</title>
   <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
   <link rel="stylesheet" href="css/base.css?v=classic-4">
-  <link rel="stylesheet" href="css/layout.css?v=readable-17">
+  <link rel="stylesheet" href="css/layout.css?v=stable-19">
   <link rel="stylesheet" href="css/board.css?v=power-18">
-  <link rel="stylesheet" href="css/powers.css?v=power-18">
-  <link rel="stylesheet" href="css/progression.css?v=readable-17">
+  <link rel="stylesheet" href="css/powers.css?v=stable-19">
+  <link rel="stylesheet" href="css/progression.css?v=stable-19">
 </head>
 <body>
   <svg class="svg-sprite" aria-hidden="true" focusable="false">
@@ -410,10 +410,10 @@
             </div>
 
 
-            <div class="power-timer-strip" id="powerTimer" hidden aria-live="off">
+            <div class="power-timer-slot"><div class="power-timer-strip" id="powerTimer" hidden aria-live="off">
               <strong id="powerTimerTitle"></strong><span id="powerTimerHint"></span>
               <b id="powerTimerValue"></b><span class="power-timer-track"><i id="powerTimerBar"></i></span>
-            </div>
+            </div></div>
             <div class="board-frame" id="boardFrame">
               <div class="board-viewport" id="boardViewport">
                 <div class="board" id="board" role="grid" aria-label="Tablero de buscaminas"></div>
@@ -798,7 +798,7 @@
       <div class="modal-head">
         <p class="kicker">NÚCLEO INCREMENTAL</p>
         <h2 id="hqTitle">Cuartel de operaciones</h2>
-        <p class="modal-sub">Juega, gana monedas, mejora el núcleo y asigna bots a cada dificultad. Ellos siguen trabajando mientras tú juegas.</p>
+        <p class="modal-sub">Administra tus bots y mejoras.</p>
       </div>
 
       <div class="hq-summary">
@@ -843,7 +843,7 @@
           <div class="hq-panel-head">
             <div>
               <h3>Escuadrón</h3>
-              <p>Asigna dificultades y habilidades. Más inteligencia reduce fallos.</p>
+              <p>Elige dificultad y configura cada bot.</p>
             </div>
             <button class="primary-btn primary-btn--small" id="hqHireBtn" type="button">
               <svg class="icon"><use href="#i-bot"></use></svg>
@@ -990,18 +990,18 @@
   <script src="js/components/extractor.js?v=turbo-13" defer></script>
   <script src="js/storage.js?v=mobile-11" defer></script>
   <script src="js/audio.js?v=classic-4" defer></script>
-  <script src="js/effects.js?v=clean-12" defer></script>
+  <script src="js/effects.js?v=stable-19" defer></script>
   <script src="js/board.js?v=classic-4" defer></script>
   <script src="js/defuse.js?v=classic-4" defer></script>
   <script src="js/components/bot-brain.js?v=human-15" defer></script>
   <script src="js/components/bot-runner.js?v=human-15" defer></script>
   <script src="js/bots.js?v=balance-14" defer></script>
-  <script src="js/game.js?v=power-18" defer></script>
-  <script src="js/components/modals.js?v=classic-10" defer></script>
-  <script src="js/components/board-view.js?v=balance-14" defer></script>
-  <script src="js/components/hq.js?v=balance-14" defer></script>
+  <script src="js/game.js?v=stable-19" defer></script>
+  <script src="js/components/modals.js?v=stable-19" defer></script>
+  <script src="js/components/board-view.js?v=stable-19" defer></script>
+  <script src="js/components/hq.js?v=stable-19" defer></script>
   <script src="js/components/spectator.js?v=readable-17" defer></script>
   <script src="js/ui.js?v=readable-17" defer></script>
-  <script src="js/app.js?v=classic-4" defer></script>
+  <script src="js/app.js?v=stable-19" defer></script>
 </body>
 </html>

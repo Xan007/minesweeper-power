@@ -2136,3 +2136,13 @@ details[open] > .contracts-head strong::before { content: "▾ "; }
 body.is-spectating .layout { grid-template-columns: minmax(0, 1fr); }
 body.is-spectating .sidebar { display: none; }
 body.is-spectating .game-shell { width: min(100%, 1200px); margin-inline: auto; }
+
+/* Un solo aviso, fijo y fuera de la zona de juego. */
+.toasts { left: auto; right: max(12px, env(safe-area-inset-right)); top: max(4px, env(safe-area-inset-top)); bottom: auto; width: min(340px, calc(100vw - 24px)); align-items: flex-end; transform: none; }
+.toast { font-size: 12px; line-height: 1.35; padding: 7px 10px; animation: toastFade 0.12s ease; }
+.toast--warn { border-left: 4px solid #a55a00; }
+.toast--danger { border-left: 4px solid #b00000; }
+.toast--success { border-left: 4px solid #008000; }
+@keyframes toastFade { from { opacity: 0; } to { opacity: 1; } }
+@media (max-width: 760px) { .toasts { left: auto; right: 8px; bottom: auto; top: max(4px, env(safe-area-inset-top)); width: min(300px, calc(100vw - 16px)); } }
+@media (prefers-reduced-motion: reduce) { .toast { animation: none; } }

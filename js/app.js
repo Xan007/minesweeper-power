@@ -51,10 +51,6 @@
       ui.toast("El almacenamiento local no está disponible. Los récords no se guardarán.", "warn", 5200);
     }
 
-    window.setTimeout(() => {
-      ui.toast("Bienvenido, agente. Gana partidas para conseguir monedas y abrir el Cuartel.", "info", 4600);
-    }, 700);
-
     // Inicializa el tamaño del tablero después del primer layout completo.
     window.setTimeout(() => ui.fitCellSize(), 120);
 

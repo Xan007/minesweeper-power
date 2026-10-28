@@ -75,7 +75,7 @@
       this.shaking = false;
       this.flashEl = document.getElementById("screenFlash");
       this.appEl = document.querySelector(".app") || document.body;
-      this.baseShakeTargets = [this.appEl, this.canvas, this.flashEl, document.getElementById("toasts")].filter(Boolean);
+      this.baseShakeTargets = [document.querySelector(".topbar"), document.querySelector(".sidebar"), this.canvas, this.flashEl].filter(Boolean);
       this.overlayShakeTargets = Array.from(document.querySelectorAll(".modal, .defuse-overlay"));
       this.shakeTargets = this.baseShakeTargets.slice();
       this.reduced = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
@@ -761,7 +761,7 @@
 
     iceShatter(element, isMine = false) {
       const { x, y } = this.centerOf(element);
-      this.shakeMedium();
+      this.addTrauma(Math.min(0.18, Math.max(0, 0.3 - this.trauma)));
 
       // Cold vapor mist rising from smashed ice
       for (let i = 0; i < 6; i += 1) {

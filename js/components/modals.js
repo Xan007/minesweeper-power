@@ -310,27 +310,16 @@
 
     toast(message, type = "info", duration = 3200) {
       if (!this.toasts) return;
+      if (this.toastTimer) window.clearTimeout(this.toastTimer);
       const el = document.createElement("div");
       el.className = `toast toast--${type}`;
       el.setAttribute("role", "status");
-      el.innerHTML = `<span>${U.escapeHtml(message)}</span>`;
-      this.toasts.appendChild(el);
-
-      void el.offsetWidth;
-      el.classList.add("is-visible");
-
-      const remove = () => {
-        el.classList.remove("is-visible");
-        window.setTimeout(() => {
-          if (el.parentNode) el.parentNode.removeChild(el);
-        }, 160);
-      };
-
-      const timer = window.setTimeout(remove, duration);
-      el.addEventListener("click", () => {
-        window.clearTimeout(timer);
-        remove();
-      });
+      el.textContent = message;
+      this.toasts.replaceChildren(el);
+      this.toastTimer = window.setTimeout(() => {
+        if (el.parentNode) el.parentNode.removeChild(el);
+        this.toastTimer = null;
+      }, duration);
     }
   }
 

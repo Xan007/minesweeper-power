@@ -872,3 +872,8 @@
   .power-timer-strip span#powerTimerHint { order: 3; flex-basis: 100%; }
   .power-timer-track { width: 65px; }
 }
+
+/* Espacio reservado: los indicadores nunca desplazan el tablero. */
+.power-timer-slot { position: relative; height: 44px; }
+.power-timer-slot .power-timer-strip { position: absolute; inset: 0 0 6px; margin: 0; overflow: hidden; }
+@media (max-width: 760px) { .power-timer-slot { height: 64px; } }

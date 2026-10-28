@@ -669,7 +669,6 @@
         } else if (result.kind === "safe") {
           this.afterSafeReveal(result.changed);
           this.ui.completeFreeze([cell]);
-          this.ui.toast("Hielo destrozado · Celda abierta con seguridad.", "info");
         }
       }
 

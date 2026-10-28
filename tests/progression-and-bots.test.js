@@ -618,3 +618,22 @@ test("sin mejorar el canon solo congela al pulsar, no al arrastrar", () => {
     assert.deepEqual(frozen, [[1, 2]]);
   } finally { global.document = previous; }
 });
+
+test("la sacudida no transforma el tablero ni los avisos", () => {
+  const oldDoc = global.document, oldListen = global.addEventListener, oldMatch = global.matchMedia;
+  const oldResize = BP.FX.prototype.resize;
+  const app = { style: {} }, bar = { style: {} }, sidebar = { style: {} }, toast = { style: {} }, canvas = { style: {}, getContext: () => ({}) };
+  try {
+    global.document = { body: app, querySelector: (name) => ({ ".app": app, ".topbar": bar, ".sidebar": sidebar }[name]), getElementById: (id) => id === "toasts" ? toast : null, querySelectorAll: () => [] };
+    global.addEventListener = () => {};
+    global.matchMedia = () => ({ matches: false });
+    BP.FX.prototype.resize = () => {};
+    const fx = new BP.FX(canvas);
+    assert.ok(fx.baseShakeTargets.includes(bar));
+    assert.ok(fx.baseShakeTargets.includes(sidebar));
+    assert.ok(!fx.baseShakeTargets.includes(app));
+    assert.ok(!fx.baseShakeTargets.includes(toast));
+  } finally {
+    global.document = oldDoc; global.addEventListener = oldListen; global.matchMedia = oldMatch; BP.FX.prototype.resize = oldResize;
+  }
+});

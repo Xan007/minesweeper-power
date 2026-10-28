@@ -146,6 +146,9 @@
         return;
       }
 
+      const openSettings = new Set(Array.from(this.hqBotList.querySelectorAll(".bot-card"))
+        .filter((card) => card.querySelector(".bot-config[open]"))
+        .map((card) => card.dataset.botId));
       this.hqBotList.innerHTML = state.bots
         .map((bot, index) => {
           const runner = this.bots ? this.bots.getRunner(bot.id) : null;
@@ -178,56 +181,28 @@
               <div class="bot-card-head">
                 <div class="bot-card-title">
                   <span class="bot-avatar">${U.icon("i-bot")}</span>
-                  <div>
-                    <h4>${U.escapeHtml(bot.name)}</h4>
-                    <span class="bot-sub">
-                      <span class="bot-status-dot ${isActive ? "is-live" : ""}"></span>
-                      ${isActive ? "Activo" : "En cola"} · ${U.formatDate(bot.createdAt)}
-                    </span>
-                  </div>
+                  <div><h4>${U.escapeHtml(bot.name)}</h4>
+                    <span class="bot-sub"><span class="bot-status-dot ${isActive ? "is-live" : ""}"></span>
+                      <span class="bot-status-label">${statusText}</span></span></div>
                 </div>
-                <div class="bot-card-badge ${isActive ? "is-active" : "is-queued"}">
-                  <span class="bot-status-label">${statusText}</span>
-                </div>
-              </div>
-
-              <div class="bot-progress-block">
-                <div class="bot-progress-header">
-                  <span class="bot-progress-label">
-                    ${runner && runner.board ? `${runner.board.revealedSafeCount}/${runner.board.safeCount} celdas` : "En espera"}
-                  </span>
-                  <span class="bot-progress-num">${progress}%</span>
-                </div>
-                <div class="bot-progress-track">
-                  <div class="bot-progress-bar bot-progress-bar--${runner ? runner.status : "idle"}" style="width: ${progress}%"></div>
-                </div>
-              </div>
-
-              <div class="bot-card-row">
-                <label class="bot-diff-label">
-                  <span>Dificultad:</span>
-                  <select data-bot-difficulty="${U.escapeHtml(bot.id)}">${difficultyOptions}</select>
-                </label>
-                <div class="bot-stats-row">
-                  <span title="Victorias / Derrotas"><b class="stat-wins">${bot.wins}</b>V · <b class="stat-losses">${bot.losses}</b>D</span>
-                  <span title="Monedas ganadas por este bot"><b class="stat-coins">${P.formatCoins(bot.coins)}</b> <svg class="icon"><use href="#i-coin"></use></svg></span>
-                </div>
-              </div>
-
-              <label class="bot-flag-option" title="Se aplica al siguiente tablero">
-                <input type="checkbox" data-bot-flags="${U.escapeHtml(bot.id)}" ${bot.useFlags !== false ? "checked" : ""}>
-                Banderas <small>Más seguro · sin ellas +30% tiempo</small>
-              </label>
-              <details class="bot-config">
-                <summary>Habilidades</summary>
-                <div class="bot-skills-grid">${skillChips}</div>
-              </details>
-
-              <div class="bot-actions-row">
                 <button class="ghost-btn ghost-btn--small" type="button" data-hq-action="watch-bot" data-bot="${U.escapeHtml(bot.id)}">
                   ${U.icon("i-eye")} Ver en vivo
                 </button>
               </div>
+              <div class="bot-progress-block">
+                <div class="bot-progress-header"><span class="bot-progress-label">${runner && runner.board ? `${runner.board.revealedSafeCount}/${runner.board.safeCount} celdas` : "En espera"}</span><span class="bot-progress-num">${progress}%</span></div>
+                <div class="bot-progress-track"><div class="bot-progress-bar bot-progress-bar--${runner ? runner.status : "idle"}" style="width: ${progress}%"></div></div>
+              </div>
+              <div class="bot-card-row">
+                <label class="bot-diff-label"><span>Dificultad</span><select data-bot-difficulty="${U.escapeHtml(bot.id)}">${difficultyOptions}</select></label>
+                <label class="bot-flag-option" title="Se aplica al siguiente tablero"><input type="checkbox" data-bot-flags="${U.escapeHtml(bot.id)}" ${bot.useFlags !== false ? "checked" : ""}> Usar banderas</label>
+              </div>
+              <div class="bot-stats-row"><span><b class="stat-wins">${bot.wins}</b> victorias</span><span><b class="stat-losses">${bot.losses}</b> derrotas</span><span><b class="stat-coins">${P.formatCoins(bot.coins)}</b> monedas</span></div>
+              <details class="bot-config" ${openSettings.has(bot.id) ? "open" : ""}>
+                <summary>Habilidades y banderas</summary>
+                <p>Con banderas comete menos errores. Sin ellas tarda más en decidir.</p>
+                <div class="bot-skills-grid">${skillChips}</div>
+              </details>
             </article>
           `;
         })
